@@ -111,9 +111,53 @@
 
 
   
-    <article id="post-Suricata-Install (Ubuntu)" class="article article-type-post" itemscope itemprop="blogPost">
+    <article id="post-Suricata - 优化 (PF_RING)" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
-    <a href="/2019/06/05/Suricata-Install (Ubuntu)/" class="article-date">
+    <a href="/2019/08/08/Suricata - 优化 (PF_RING)/" class="article-date">
+  <time datetime="2019-08-08T01:51:35.813Z" itemprop="datePublished">2019-08-08</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2019/08/08/Suricata - 优化 (PF_RING)/">Suricata PF_RING 优化</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">$ cat /proc/net/pf_ring/info</span><br><span class="line">PF_RING Version          : 7.5.0 (dev:94598cdfa46e84dab0a5e673c9d294325bbe72d3)</span><br><span class="line">Total rings              : 0</span><br><span class="line"></span><br><span class="line">Standard (non ZC) Options</span><br><span class="line">Ring slots               : 65536</span><br><span class="line">Slot version             : 17</span><br><span class="line">Capture TX               : Yes [RX+TX]</span><br><span class="line">IP Defragment            : No</span><br><span class="line">Socket Mode              : Standard</span><br><span class="line">Cluster Fragment Queue   : 0</span><br><span class="line">Cluster Fragment Discard : 0</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$ find / -name <span class="string">'pf_ring.ko'</span></span><br><span class="line">/lib/modules/4.15.0-1044-aws/kernel/net/pf_ring/pf_ring.ko</span><br><span class="line">/var/lib/dkms/pfring/7.4.0/4.15.0-1044-aws/x86_64/module/pf_ring.ko</span><br><span class="line"></span><br><span class="line">$ <span class="built_in">cd</span> /lib/modules/4.15.0-1044-aws/kernel/net/pf_ring/</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ rmmod pf_ring</span><br><span class="line">$ insmod pf_ring.ko min_num_slots=65536 transparent_mode=2 enable_tx_capture=0</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">$ cat /proc/net/pf_ring/info</span><br><span class="line">PF_RING Version          : 7.5.0 (dev:94598cdfa46e84dab0a5e673c9d294325bbe72d3)</span><br><span class="line">Total rings              : 0</span><br><span class="line"></span><br><span class="line">Standard (non ZC) Options</span><br><span class="line">Ring slots               : 65536</span><br><span class="line">Slot version             : 17</span><br><span class="line">Capture TX               : No [RX only]</span><br><span class="line">IP Defragment            : No</span><br><span class="line">Socket Mode              : Standard</span><br><span class="line">Cluster Fragment Queue   : 0</span><br><span class="line">Cluster Fragment Discard : 0</span><br></pre></td></tr></table></figure>
+
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2019/08/08/Suricata - 优化 (PF_RING)/" data-id="ck1doru5w0000mb0ylz1nahzf" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-Suricata - 安装 (Ubuntu)" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2019/06/05/Suricata - 安装 (Ubuntu)/" class="article-date">
   <time datetime="2019-06-05T15:27:15.052Z" itemprop="datePublished">2019-06-05</time>
 </a>
     
@@ -125,7 +169,7 @@
         
   
     <h1 itemprop="name">
-      <a class="article-title" href="/2019/06/05/Suricata-Install (Ubuntu)/">Suricata Install</a>
+      <a class="article-title" href="/2019/06/05/Suricata - 安装 (Ubuntu)/">Suricata 安装</a>
     </h1>
   
 
@@ -144,7 +188,7 @@
 <li><a href="https://www.ntop.org/guides/pf_ring/thirdparty/suricata.html" target="_blank" rel="noopener">https://www.ntop.org/guides/pf_ring/thirdparty/suricata.html</a></li>
 </ul>
 <p><strong>二进制安装</strong></p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 18.04 LTS</span></span><br><span class="line">$ apt-get install software-properties-common wget</span><br><span class="line">$ add-apt-repository universe [ unless you have <span class="keyword">done</span> it previously ]</span><br><span class="line">$ wget http://apt-stable.ntop.org/18.04/all/apt-ntop-stable.deb</span><br><span class="line">$ apt install ./apt-ntop-stable.deb</span><br><span class="line"></span><br><span class="line">$ apt-get clean all</span><br><span class="line">$ apt-get update</span><br><span class="line">$ apt-get install pfring</span><br><span class="line"></span><br><span class="line"><span class="comment"># 注: 需要手动优化</span></span><br><span class="line">$ apt-get install pfring-dkms</span><br><span class="line">$ mkdir -p /etc/pf_ring</span><br><span class="line">$ <span class="built_in">echo</span> <span class="string">"min_num_slots=65536"</span> &gt; /etc/pf_ring/pf_ring.conf</span><br><span class="line">$ sudo systemctl restart pf_ring</span><br></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 18.04 LTS</span></span><br><span class="line">$ apt-get install software-properties-common wget</span><br><span class="line">$ add-apt-repository universe [ unless you have <span class="keyword">done</span> it previously ]</span><br><span class="line">$ wget http://apt-stable.ntop.org/18.04/all/apt-ntop-stable.deb</span><br><span class="line">$ apt install ./apt-ntop-stable.deb</span><br><span class="line"></span><br><span class="line">$ apt-get clean all</span><br><span class="line">$ apt-get update</span><br><span class="line">$ apt-get install pfring</span><br></pre></td></tr></table></figure>
 
 <p><strong>编译安装</strong></p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 依赖</span></span><br><span class="line">$ apt install git make gcc libelf-dev build-essential subversion flex libnuma-dev bison pkg-config libtool rustc cargo libjansson-dev ethtool autoconf autogen liblzma-dev libpcre3-dev libyaml-dev libpcap-dev zlib1g-dev</span><br><span class="line"></span><br><span class="line"><span class="comment"># 下载</span></span><br><span class="line">$ git <span class="built_in">clone</span> https://github.com/ntop/PF_RING.git</span><br><span class="line"></span><br><span class="line"><span class="comment"># 安装</span></span><br><span class="line">$ <span class="built_in">cd</span> PF_RING/kernel</span><br><span class="line">$ make</span><br><span class="line">$ sudo make install</span><br><span class="line"></span><br><span class="line">$ mkdir -p /lib/modules/4.15.0-1045-aws/kernel/net/pf_ring</span><br><span class="line">$ cp *.ko /lib/modules/4.15.0-1045-aws/kernel/net/pf_ring</span><br><span class="line">$ mkdir -p /usr/include/linux</span><br><span class="line">$ cp linux/pf_ring.h /usr/include/linux</span><br><span class="line">$ /sbin/depmod 4.15.0-1045-aws</span><br><span class="line"></span><br><span class="line"><span class="comment"># 启动</span></span><br><span class="line">$ <span class="built_in">cd</span> /lib/modules/4.15.0-1045-aws/kernel/net/pf_ring</span><br><span class="line">$ sudo insmod pf_ring.ko min_num_slots=65536 transparent_mode=2 enable_tx_capture=0</span><br><span class="line"></span><br><span class="line">$ cat /proc/net/pf_ring/info</span><br><span class="line">PF_RING Version          : 7.5.0 (dev:8fe7d4ca0398e7c530b6cd583d0891d0d229bf7e)</span><br><span class="line">Total rings              : 0</span><br><span class="line"></span><br><span class="line">Standard (non ZC) Options</span><br><span class="line">Ring slots               : 65536</span><br><span class="line">Slot version             : 17</span><br><span class="line">Capture TX               : No [RX only]</span><br><span class="line">IP Defragment            : No</span><br><span class="line">Socket Mode              : Standard</span><br><span class="line">Cluster Fragment Queue   : 0</span><br><span class="line">Cluster Fragment Discard : 0</span><br></pre></td></tr></table></figure>
@@ -181,7 +225,7 @@
 <p><strong>3. Hyperscan</strong></p>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> suricata --build-info | grep Hyperscan</span></span><br><span class="line">  Hyperscan support:                       yes</span><br></pre></td></tr></table></figure>
 
-<h1 id="启动"><a href="#启动" class="headerlink" title="启动"></a><strong>启动</strong></h1><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> suricata --pfring-int=ens6 --pfring-cluster-id=99 --pfring-cluster-type=cluster_flow -c /etc/suricata/suricata.yaml</span></span><br><span class="line"></span><br><span class="line"><span class="meta">$</span><span class="bash"> suricata --pfring -c /etc/suricata/suricata.yaml</span></span><br></pre></td></tr></table></figure>
+<h1 id="启动"><a href="#启动" class="headerlink" title="启动"></a><strong>启动</strong></h1><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> suricata --pfring-int=ens6 --pfring-cluster-id=99 --pfring-cluster-type=cluster_flow -c /etc/suricata/suricata.yaml</span></span><br></pre></td></tr></table></figure>
 
 <h1 id="规则管理"><a href="#规则管理" class="headerlink" title="规则管理"></a>规则管理</h1><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ pip install --upgrade suricata-update</span><br></pre></td></tr></table></figure>
 
@@ -193,7 +237,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2019/06/05/Suricata-Install (Ubuntu)/" data-id="ck1dn9hqi0000dw0ydpaq6k7b" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2019/06/05/Suricata - 安装 (Ubuntu)/" data-id="ck1doru650001mb0yn91494jh" class="article-share-link">Share</a>
       
       
     </footer>
@@ -221,7 +265,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/10/">October 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/06/">June 2019</a></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/10/">October 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/08/">August 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/06/">June 2019</a></li></ul>
     </div>
   </div>
 
@@ -238,7 +282,11 @@
           </li>
         
           <li>
-            <a href="/2019/06/05/Suricata-Install (Ubuntu)/">Suricata Install</a>
+            <a href="/2019/08/08/Suricata - 优化 (PF_RING)/">Suricata PF_RING 优化</a>
+          </li>
+        
+          <li>
+            <a href="/2019/06/05/Suricata - 安装 (Ubuntu)/">Suricata 安装</a>
           </li>
         
       </ul>
