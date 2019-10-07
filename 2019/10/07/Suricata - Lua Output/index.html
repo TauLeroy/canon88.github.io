@@ -5,15 +5,19 @@
   
 
   
-  <title>Hexo</title>
+  <title>Lua Output Script | Hexo</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta property="og:type" content="website">
-<meta property="og:title" content="Hexo">
-<meta property="og:url" content="http://yoursite.com/index.html">
+  <meta name="description" content="需求: ​    由于最近网站遭受大量撞库攻击, 想监控一下登录接口中的一些异常行为。通过alert并不能起到很好的效果, 想可以利用Lua脚本进行扩展, 写了一个审计登录接口的脚本。通过审计的登录接口事件, 再配合Wazuh进行一些简单的关联告警,  效果还是不错的。代码如下: 12345678910111213141516171819202122232425262728293031323334">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Lua Output Script">
+<meta property="og:url" content="http://yoursite.com/2019/10/07/Suricata - Lua Output/index.html">
 <meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="需求: ​    由于最近网站遭受大量撞库攻击, 想监控一下登录接口中的一些异常行为。通过alert并不能起到很好的效果, 想可以利用Lua脚本进行扩展, 写了一个审计登录接口的脚本。通过审计的登录接口事件, 再配合Wazuh进行一些简单的关联告警,  效果还是不错的。代码如下: 12345678910111213141516171819202122232425262728293031323334">
 <meta property="og:locale" content="en">
+<meta property="og:updated_time" content="2019-10-07T13:57:58.959Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Hexo">
+<meta name="twitter:title" content="Lua Output Script">
+<meta name="twitter:description" content="需求: ​    由于最近网站遭受大量撞库攻击, 想监控一下登录接口中的一些异常行为。通过alert并不能起到很好的效果, 想可以利用Lua脚本进行扩展, 写了一个审计登录接口的脚本。通过审计的登录接口事件, 再配合Wazuh进行一些简单的关联告警,  效果还是不错的。代码如下: 12345678910111213141516171819202122232425262728293031323334">
   
     <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
   
@@ -60,9 +64,7 @@
   </div>
 </header>
       <div class="outer">
-        <section id="main">
-  
-    <article id="post-Suricata - Lua Output" class="article article-type-post" itemscope itemprop="blogPost">
+        <section id="main"><article id="post-Suricata - Lua Output" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2019/10/07/Suricata - Lua Output/" class="article-date">
   <time datetime="2019-10-07T05:44:11.837Z" itemprop="datePublished">2019-10-07</time>
@@ -75,8 +77,8 @@
       <header class="article-header">
         
   
-    <h1 itemprop="name">
-      <a class="article-title" href="/2019/10/07/Suricata - Lua Output/">Lua Output Script</a>
+    <h1 class="article-title" itemprop="name">
+      Lua Output Script
     </h1>
   
 
@@ -102,196 +104,19 @@
     </footer>
   </div>
   
-</article>
-
-
+    
+<nav id="article-nav">
   
-    <article id="post-hello-world" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2019/10/04/hello-world/" class="article-date">
-  <time datetime="2019-10-04T14:38:54.834Z" itemprop="datePublished">2019-10-04</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
   
-    <h1 itemprop="name">
-      <a class="article-title" href="/2019/10/04/hello-world/">Hello World</a>
-    </h1>
+    <a href="/2019/10/04/hello-world/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Hello World</div>
+    </a>
   
+</nav>
 
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>Welcome to <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/" target="_blank" rel="noopener">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html" target="_blank" rel="noopener">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues" target="_blank" rel="noopener">GitHub</a>.</p>
-<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new <span class="string">"My New Post"</span></span><br></pre></td></tr></table></figure>
-
-<p>More info: <a href="https://hexo.io/docs/writing.html" target="_blank" rel="noopener">Writing</a></p>
-<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a href="https://hexo.io/docs/server.html" target="_blank" rel="noopener">Server</a></p>
-<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a href="https://hexo.io/docs/generating.html" target="_blank" rel="noopener">Generating</a></p>
-<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a href="https://hexo.io/docs/deployment.html" target="_blank" rel="noopener">Deployment</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://yoursite.com/2019/10/04/hello-world/" data-id="ck1dn9hqn0001dw0ytbfnnxgq" class="article-share-link">Share</a>
-      
-      
-    </footer>
-  </div>
   
 </article>
-
-
-  
-    <article id="post-Suricata - 优化 (PF_RING)" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2019/08/08/Suricata - 优化 (PF_RING)/" class="article-date">
-  <time datetime="2019-08-08T01:51:35.813Z" itemprop="datePublished">2019-08-08</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2019/08/08/Suricata - 优化 (PF_RING)/">PF_RING 优化</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <hr>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">$ cat /proc/net/pf_ring/info</span><br><span class="line">PF_RING Version          : 7.5.0 (dev:94598cdfa46e84dab0a5e673c9d294325bbe72d3)</span><br><span class="line">Total rings              : 0</span><br><span class="line"></span><br><span class="line">Standard (non ZC) Options</span><br><span class="line">Ring slots               : 65536</span><br><span class="line">Slot version             : 17</span><br><span class="line">Capture TX               : Yes [RX+TX]</span><br><span class="line">IP Defragment            : No</span><br><span class="line">Socket Mode              : Standard</span><br><span class="line">Cluster Fragment Queue   : 0</span><br><span class="line">Cluster Fragment Discard : 0</span><br></pre></td></tr></table></figure>
-
-<hr>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">$ find / -name <span class="string">'pf_ring.ko'</span></span><br><span class="line">/lib/modules/4.15.0-1044-aws/kernel/net/pf_ring/pf_ring.ko</span><br><span class="line">/var/lib/dkms/pfring/7.4.0/4.15.0-1044-aws/x86_64/module/pf_ring.ko</span><br><span class="line"></span><br><span class="line">$ <span class="built_in">cd</span> /lib/modules/4.15.0-1044-aws/kernel/net/pf_ring/</span><br><span class="line">$ rmmod pf_ring</span><br><span class="line">$ insmod pf_ring.ko min_num_slots=65536 transparent_mode=2 enable_tx_capture=0</span><br></pre></td></tr></table></figure>
-
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">$ cat /proc/net/pf_ring/info</span><br><span class="line">PF_RING Version          : 7.5.0 (dev:94598cdfa46e84dab0a5e673c9d294325bbe72d3)</span><br><span class="line">Total rings              : 0</span><br><span class="line"></span><br><span class="line">Standard (non ZC) Options</span><br><span class="line">Ring slots               : 65536</span><br><span class="line">Slot version             : 17</span><br><span class="line">Capture TX               : No [RX only]</span><br><span class="line">IP Defragment            : No</span><br><span class="line">Socket Mode              : Standard</span><br><span class="line">Cluster Fragment Queue   : 0</span><br><span class="line">Cluster Fragment Discard : 0</span><br></pre></td></tr></table></figure>
-
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://yoursite.com/2019/08/08/Suricata - 优化 (PF_RING)/" data-id="ck1doru5w0000mb0ylz1nahzf" class="article-share-link">Share</a>
-      
-      
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-Suricata - 安装 (Ubuntu)" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2019/06/05/Suricata - 安装 (Ubuntu)/" class="article-date">
-  <time datetime="2019-06-05T15:27:15.052Z" itemprop="datePublished">2019-06-05</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2019/06/05/Suricata - 安装 (Ubuntu)/">Suricata 安装</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h1 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h1><h2 id="PF-RING"><a href="#PF-RING" class="headerlink" title="PF_RING"></a>PF_RING</h2><p><strong>参考:</strong></p>
-<ul>
-<li><strong><a href="https://www.ntop.org/guides/pf_ring/get_started/git_installation.html" target="_blank" rel="noopener">PF_RING</a></strong></li>
-</ul>
-<p><strong>建议采用二进制包安装, 参考:</strong></p>
-<ul>
-<li><a href="http://packages.ntop.org/apt-stable/" target="_blank" rel="noopener">http://packages.ntop.org/apt-stable/</a></li>
-<li><a href="https://www.ntop.org/guides/pf_ring/get_started/packages_installation.html" target="_blank" rel="noopener">https://www.ntop.org/guides/pf_ring/get_started/packages_installation.html</a></li>
-<li><a href="https://www.ntop.org/guides/pf_ring/thirdparty/suricata.html" target="_blank" rel="noopener">https://www.ntop.org/guides/pf_ring/thirdparty/suricata.html</a></li>
-</ul>
-<p><strong>二进制安装</strong></p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 18.04 LTS</span></span><br><span class="line">$ apt-get install software-properties-common wget</span><br><span class="line">$ add-apt-repository universe [ unless you have <span class="keyword">done</span> it previously ]</span><br><span class="line">$ wget http://apt-stable.ntop.org/18.04/all/apt-ntop-stable.deb</span><br><span class="line">$ apt install ./apt-ntop-stable.deb</span><br><span class="line"></span><br><span class="line">$ apt-get clean all</span><br><span class="line">$ apt-get update</span><br><span class="line">$ apt-get install pfring</span><br></pre></td></tr></table></figure>
-
-<p><strong>编译安装</strong></p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 依赖</span></span><br><span class="line">$ apt install git make gcc libelf-dev build-essential subversion flex libnuma-dev bison pkg-config libtool rustc cargo libjansson-dev ethtool autoconf autogen liblzma-dev libpcre3-dev libyaml-dev libpcap-dev zlib1g-dev</span><br><span class="line"></span><br><span class="line"><span class="comment"># 下载</span></span><br><span class="line">$ git <span class="built_in">clone</span> https://github.com/ntop/PF_RING.git</span><br><span class="line"></span><br><span class="line"><span class="comment"># 安装</span></span><br><span class="line">$ <span class="built_in">cd</span> PF_RING/kernel</span><br><span class="line">$ make</span><br><span class="line">$ sudo make install</span><br><span class="line"></span><br><span class="line">$ mkdir -p /lib/modules/4.15.0-1045-aws/kernel/net/pf_ring</span><br><span class="line">$ cp *.ko /lib/modules/4.15.0-1045-aws/kernel/net/pf_ring</span><br><span class="line">$ mkdir -p /usr/include/linux</span><br><span class="line">$ cp linux/pf_ring.h /usr/include/linux</span><br><span class="line">$ /sbin/depmod 4.15.0-1045-aws</span><br><span class="line"></span><br><span class="line"><span class="comment"># 启动</span></span><br><span class="line">$ <span class="built_in">cd</span> /lib/modules/4.15.0-1045-aws/kernel/net/pf_ring</span><br><span class="line">$ sudo insmod pf_ring.ko min_num_slots=65536 transparent_mode=2 enable_tx_capture=0</span><br><span class="line"></span><br><span class="line">$ cat /proc/net/pf_ring/info</span><br><span class="line">PF_RING Version          : 7.5.0 (dev:8fe7d4ca0398e7c530b6cd583d0891d0d229bf7e)</span><br><span class="line">Total rings              : 0</span><br><span class="line"></span><br><span class="line">Standard (non ZC) Options</span><br><span class="line">Ring slots               : 65536</span><br><span class="line">Slot version             : 17</span><br><span class="line">Capture TX               : No [RX only]</span><br><span class="line">IP Defragment            : No</span><br><span class="line">Socket Mode              : Standard</span><br><span class="line">Cluster Fragment Queue   : 0</span><br><span class="line">Cluster Fragment Discard : 0</span><br></pre></td></tr></table></figure>
-
-<p><strong>Libpfring、Libpcap</strong></p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 安装</span></span><br><span class="line"><span class="meta">$</span><span class="bash"> <span class="built_in">cd</span> PF_RING/userland/lib</span></span><br><span class="line"><span class="meta">$</span><span class="bash"> ./configure &amp;&amp; make</span></span><br><span class="line"><span class="meta">$</span><span class="bash"> sudo make install</span></span><br><span class="line"><span class="meta">$</span><span class="bash"> <span class="built_in">cd</span> ../libpcap</span></span><br><span class="line"><span class="meta">$</span><span class="bash"> ./configure &amp;&amp; make</span></span><br><span class="line"><span class="meta">$</span><span class="bash"> sudo make install</span></span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> 验证</span></span><br><span class="line"><span class="meta">$</span><span class="bash"> <span class="built_in">cd</span> PF_RING/userland/examples</span></span><br><span class="line"><span class="meta">$</span><span class="bash"> make</span></span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> 接收数据包</span></span><br><span class="line">root@ubuntu:/opt/PF_RING/userland/examples# ./pfcount -i ens33</span><br><span class="line">Using PF_RING v.7.5.0</span><br><span class="line">Capturing from ens33 [mac: 00:0C:29:D5:B9:8F][if_index: 2][speed: 0Mb/s]</span><br><span class="line"><span class="meta">#</span><span class="bash"> Device RX channels: 1</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> Polling threads:    1</span></span><br><span class="line">Dumping statistics on /proc/net/pf_ring/stats/51441-ens33.3</span><br><span class="line">=========================</span><br><span class="line">Absolute Stats: [2 pkts total][0 pkts dropped][0.0% dropped]</span><br><span class="line">[2 pkts rcvd][424 bytes rcvd]</span><br><span class="line">=========================</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> 发送数据包</span></span><br><span class="line">root@ubuntu:/opt/PF_RING/userland/examples# sudo ./pfsend -f 64byte_packets.pcap -n 0 -i ens33 -r 5</span><br><span class="line">Sending packets on ens33</span><br><span class="line">Using PF_RING v.7.5.0</span><br><span class="line">Estimated CPU freq: 2429795000 Hz</span><br><span class="line">Unable to open file 64byte_packets.pcap</span><br></pre></td></tr></table></figure>
-
-<h2 id="LuaJIT"><a href="#LuaJIT" class="headerlink" title="LuaJIT"></a>LuaJIT</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 安装</span></span><br><span class="line"><span class="meta">$</span><span class="bash"> wget http://luajit.org/download/LuaJIT-2.0.5.tar.gz</span></span><br><span class="line"><span class="meta">$</span><span class="bash"> tar -zxf LuaJIT-2.0.5.tar.gz</span></span><br><span class="line"><span class="meta">$</span><span class="bash"> <span class="built_in">cd</span> LuaJIT-2.0.5/</span></span><br><span class="line"><span class="meta">$</span><span class="bash"> make &amp;&amp; make install</span></span><br><span class="line"><span class="meta">$</span><span class="bash"> ldconfig</span></span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> 验证</span></span><br><span class="line"><span class="meta">$</span><span class="bash"> ldconfig -p | grep lua</span></span><br><span class="line">	liblua5.1.so.0 (libc6,x86-64) =&gt; /usr/lib/x86_64-linux-gnu/liblua5.1.so.0</span><br><span class="line">	liblua5.1.so (libc6,x86-64) =&gt; /usr/lib/x86_64-linux-gnu/liblua5.1.so</span><br><span class="line">	liblua5.1-c++.so.0 (libc6,x86-64) =&gt; /usr/lib/x86_64-linux-gnu/liblua5.1-c++.so.0</span><br><span class="line">	liblua5.1-c++.so (libc6,x86-64) =&gt; /usr/lib/x86_64-linux-gnu/liblua5.1-c++.so</span><br></pre></td></tr></table></figure>
-
-<h2 id="Hyperscan"><a href="#Hyperscan" class="headerlink" title="Hyperscan"></a>Hyperscan</h2><p><strong>参考:</strong></p>
-<ul>
-<li><a href="http://www.manongjc.com/article/110977.html" target="_blank" rel="noopener"><strong>Hyperscan - 5.1.0 安装</strong></a></li>
-</ul>
-<p><strong>1. boost</strong></p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 依赖</span></span><br><span class="line"><span class="meta">$</span><span class="bash"> apt install cmake</span></span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> 下载</span></span><br><span class="line"><span class="meta">$</span><span class="bash"> wget https://dl.bintray.com/boostorg/release/1.69.0/<span class="built_in">source</span>/boost_1_69_0.tar.gz</span></span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> 安装</span></span><br><span class="line"><span class="meta">$</span><span class="bash"> tar -xvf boost_1_69_0.tar.gz</span></span><br><span class="line"><span class="meta">$</span><span class="bash"> <span class="built_in">cd</span> boost_1_69_0/</span></span><br><span class="line"><span class="meta">$</span><span class="bash"> ./bootstrap.sh</span></span><br><span class="line"><span class="meta">$</span><span class="bash"> sudo ./b2 --with-iostreams --with-random install</span></span><br><span class="line"><span class="meta">$</span><span class="bash"> ldconfig</span></span><br></pre></td></tr></table></figure>
-
-<p><strong>2. ragle</strong></p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 依赖</span></span><br><span class="line">$ sudo apt-get install autoconf</span><br><span class="line"></span><br><span class="line"><span class="comment"># 下载</span></span><br><span class="line">$ wget http://www.colm.net/files/ragel/ragel-6.10.tar.gz</span><br><span class="line"></span><br><span class="line"><span class="comment"># 安装</span></span><br><span class="line">$ tar zxvf ragel-6.10.tar.gz</span><br><span class="line">$ <span class="built_in">cd</span> ragel-6.10</span><br><span class="line">$ ./configure</span><br><span class="line">$ make</span><br><span class="line">$ sudo make install</span><br><span class="line">$ ldconfig</span><br></pre></td></tr></table></figure>
-
-<p><strong>3. hyperscan</strong></p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 依赖</span></span><br><span class="line">$ sudo apt install libpcap-dev</span><br><span class="line"></span><br><span class="line"><span class="comment"># 下载</span></span><br><span class="line">$ wget https://github.com/intel/hyperscan/archive/v5.1.0.tar.gz</span><br><span class="line"></span><br><span class="line"><span class="comment"># 安装</span></span><br><span class="line">$ tar -zxvf hyperscan-5.1.0.tar.gz</span><br><span class="line">$ <span class="built_in">cd</span> hyperscan-5.1.0</span><br><span class="line">$ mkdir cmake-build</span><br><span class="line">$ <span class="built_in">cd</span> cmake-build</span><br><span class="line">$ cmake -DBUILD_SHARED_LIBS=on -DCMAKE_BUILD_TYPE=Release ..</span><br><span class="line">$ make -j8</span><br><span class="line">$ sudo make install</span><br><span class="line">$ ldconfig</span><br></pre></td></tr></table></figure>
-
-<p><strong>4. 验证</strong></p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> ldconfig -p | grep hs</span></span><br><span class="line">	libhs_runtime.so.5 (libc6,x86-64) =&gt; /usr/local/lib/libhs_runtime.so.5</span><br><span class="line">	libhs_runtime.so (libc6,x86-64) =&gt; /usr/local/lib/libhs_runtime.so</span><br><span class="line">	libhs.so.5 (libc6,x86-64) =&gt; /usr/local/lib/libhs.so.5</span><br><span class="line">	libhs.so (libc6,x86-64) =&gt; /usr/local/lib/libhs.so</span><br></pre></td></tr></table></figure>
-
-<h2 id="Suricata"><a href="#Suricata" class="headerlink" title="Suricata"></a><strong>Suricata</strong></h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 依赖</span></span><br><span class="line"><span class="meta">$</span><span class="bash"> apt-get install libpcre3 libpcre3-dbg libpcre3-dev build-essential libpcap-dev   \</span></span><br><span class="line">                libnet1-dev libyaml-0-2 libyaml-dev pkg-config zlib1g zlib1g-dev \</span><br><span class="line">                libcap-ng-dev libcap-ng0 make libmagic-dev libjansson-dev        \</span><br><span class="line">                libnss3-dev libgeoip-dev libhiredis-dev libevent-dev \</span><br><span class="line">                python-yaml rustc cargo libmaxminddb-dev liblzma-dev \</span><br><span class="line">                python3-distutils liblz4-dev</span><br><span class="line">                </span><br><span class="line"><span class="meta">#</span><span class="bash"> 编译</span></span><br><span class="line"><span class="meta">$</span><span class="bash"> mkdir suricata</span></span><br><span class="line"><span class="meta">$</span><span class="bash"> <span class="built_in">cd</span> suricata</span></span><br><span class="line"><span class="meta">$</span><span class="bash"> git <span class="built_in">clone</span> git://phalanx.openinfosecfoundation.org/oisf.git</span></span><br><span class="line"><span class="meta">$</span><span class="bash"> <span class="built_in">cd</span> oisf</span></span><br><span class="line"><span class="meta">$</span><span class="bash"> git <span class="built_in">clone</span> https://github.com/OISF/libhtp.git</span></span><br><span class="line"><span class="meta">$</span><span class="bash"> ./autogen.sh</span></span><br><span class="line"><span class="meta">$</span><span class="bash"> ./configure --prefix=/usr --sysconfdir=/etc --localstatedir=/var --<span class="built_in">enable</span>-profiling --<span class="built_in">enable</span>-pfring --with-libpfring-includes=/usr/<span class="built_in">local</span>/include --with-libpfring-libraries=/usr/<span class="built_in">local</span>/lib --<span class="built_in">enable</span>-geoip  --<span class="built_in">enable</span>-luajit --with-libluajit-includes=/usr/<span class="built_in">local</span>/include/luajit-2.0/ --with-libluajit-libraries=/usr/<span class="built_in">local</span>/lib/ --with-libhs-includes=/usr/<span class="built_in">local</span>/include/hs/ --with-libhs-libraries=/usr/<span class="built_in">local</span>/lib/</span></span><br><span class="line"><span class="meta">$</span><span class="bash"> make &amp;&amp; make install-full</span></span><br><span class="line"><span class="meta">$</span><span class="bash"> ldconfig</span></span><br></pre></td></tr></table></figure>
-
-<h1 id="验证"><a href="#验证" class="headerlink" title="验证"></a>验证</h1><p><strong>1. PF_RING</strong></p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> suricata --build-info | grep PF_RING</span></span><br><span class="line">Features: PCAP_SET_BUFF PF_RING AF_PACKET HAVE_PACKET_FANOUT LIBCAP_NG LIBNET1.1 HAVE_HTP_URI_NORMALIZE_HOOK PCRE_JIT HAVE_NSS HAVE_LUA HAVE_LUAJIT HAVE_LIBJANSSON PROFILING TLS MAGIC RUST</span><br><span class="line">  PF_RING support:                         yes</span><br></pre></td></tr></table></figure>
-
-<p><strong>2. LuaJit</strong></p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> suricata --build-info | grep lua</span></span><br><span class="line">  LUA support:                             yes, through luajit</span><br><span class="line">  libluajit:                               yes</span><br></pre></td></tr></table></figure>
-
-<p><strong>3. Hyperscan</strong></p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> suricata --build-info | grep Hyperscan</span></span><br><span class="line">  Hyperscan support:                       yes</span><br></pre></td></tr></table></figure>
-
-<h1 id="启动"><a href="#启动" class="headerlink" title="启动"></a><strong>启动</strong></h1><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> suricata --pfring-int=ens6 --pfring-cluster-id=99 --pfring-cluster-type=cluster_flow -c /etc/suricata/suricata.yaml</span></span><br></pre></td></tr></table></figure>
-
-<h1 id="规则管理"><a href="#规则管理" class="headerlink" title="规则管理"></a>规则管理</h1><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ pip install --upgrade suricata-update</span><br></pre></td></tr></table></figure>
-
-<p><strong>定时更新</strong></p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">10 0 * * * /usr/bin/suricata-update --no-test &amp;&amp; /usr/bin/suricatasc -c reload-rules</span><br></pre></td></tr></table></figure>
-
-<h1 id="优化"><a href="#优化" class="headerlink" title="优化"></a>优化</h1><p><a href="https://www.jianshu.com/p/9348e211a6a2" target="_blank" rel="noopener">https://www.jianshu.com/p/9348e211a6a2</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://yoursite.com/2019/06/05/Suricata - 安装 (Ubuntu)/" data-id="ck1doru650001mb0yn91494jh" class="article-share-link">Share</a>
-      
-      
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-
 
 </section>
         
