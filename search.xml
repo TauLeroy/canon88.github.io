@@ -1,6 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title>test</title>
+    <url>/2019/10/14/test/</url>
+    <content><![CDATA[<p>测试测试</p>
+<p>引入图片</p>
+<p><img src="/2019/10/14/test/image-20191014120228298.png" alt="image-20191014120228298"></p>
+]]></content>
+  </entry>
+  <entry>
     <title>Suricata - Lua Output Script</title>
     <url>/2019/10/14/Suricata%20-%20Lua%20Output/</url>
     <content><![CDATA[<h1 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h1><p>​    由于近期网站遭受大量撞库攻击, 想监控一下登录接口中的异常行为。通过<strong>alert</strong>并不能起到很好的效果, 所以采用<strong>Lua</strong>脚本进行扩展, 写了一个审计登录接口的脚本。通过登录接口事件, 再配合<strong>Wazuh</strong>进行一些简单的关联告警,  效果还是不错的。</p>
