@@ -55,17 +55,19 @@
   };
 </script>
 
-  <meta name="description" content="一个中年危机的安全工程师">
-<meta property="og:type" content="website">
-<meta property="og:title" content="Canon&#39;s Blog">
-<meta property="og:url" content="http://yoursite.com/archives/index.html">
+  <meta name="description" content="​        由于是云环境, 很多优化网卡的操作都没有办法进行, 以下是能够执行的一些操作。 网卡优化设置RX队列大小 查看当前 Ring Buffer 大小  123456789101112$ ethtool -g ens3Ring parameters for ens3:Pre-set maximums:RX:		4096RX Mini:	0RX Jumbo:	0TX:		4096Curr">
+<meta name="keywords" content="Suricata">
+<meta property="og:type" content="article">
+<meta property="og:title" content="我在&#39;云&#39;上的日子 - Suricata(优化)">
+<meta property="og:url" content="http://yoursite.com/2019/10/14/我在'云'上的日子 - Suricata(优化)/index.html">
 <meta property="og:site_name" content="Canon&#39;s Blog">
-<meta property="og:description" content="一个中年危机的安全工程师">
+<meta property="og:description" content="​        由于是云环境, 很多优化网卡的操作都没有办法进行, 以下是能够执行的一些操作。 网卡优化设置RX队列大小 查看当前 Ring Buffer 大小  123456789101112$ ethtool -g ens3Ring parameters for ens3:Pre-set maximums:RX:		4096RX Mini:	0RX Jumbo:	0TX:		4096Curr">
 <meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2019-10-14T02:47:36.313Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Canon&#39;s Blog">
-<meta name="twitter:description" content="一个中年危机的安全工程师">
-  <link rel="canonical" href="http://yoursite.com/archives/">
+<meta name="twitter:title" content="我在&#39;云&#39;上的日子 - Suricata(优化)">
+<meta name="twitter:description" content="​        由于是云环境, 很多优化网卡的操作都没有办法进行, 以下是能够执行的一些操作。 网卡优化设置RX队列大小 查看当前 Ring Buffer 大小  123456789101112$ ethtool -g ens3Ring parameters for ens3:Pre-set maximums:RX:		4096RX Mini:	0RX Jumbo:	0TX:		4096Curr">
+  <link rel="canonical" href="http://yoursite.com/2019/10/14/我在'云'上的日子 - Suricata(优化)/">
 
 
 <script id="page-configurations">
@@ -73,13 +75,13 @@
   CONFIG.page = {
     sidebar: "",
     isHome: false,
-    isPost: false,
+    isPost: true,
     isPage: false,
-    isArchive: true
+    isArchive: false
   };
 </script>
 
-  <title>归档 | Canon's Blog</title>
+  <title>我在'云'上的日子 - Suricata(优化) | Canon's Blog</title>
   
 
 
@@ -209,24 +211,6 @@
 
     
 
-  
-    
-    
-  
-    
-    
-  
-    
-    
-  
-    
-    
-  
-    
-    
-  
-  
-
 </nav>
   <div class="site-search">
     <div class="popup search-popup">
@@ -267,240 +251,168 @@
           <div id="content" class="content">
             
 
+  <div class="posts-expand">
+      
   
   
-  
-  <div class="post-block">
-    <div class="posts-collapse">
-      <div class="collection-title">
-        
-        
-        
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/10/14/我在'云'上的日子 - Suricata(优化)/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Canon">
+      <meta itemprop="description" content="一个中年危机的安全工程师">
+      <meta itemprop="image" content="/images/avatar.jpeg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Canon's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">我在'云'上的日子 - Suricata(优化)
+
           
-        
-        <span class="collection-header">嗯..! 目前共计 7 篇日志。 继续努力。</span>
-      </div>
-      
+        </h1>
 
-      
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
 
-  
-  
+              
+                
+              
 
-  
+              <time title="创建时间：2019-10-14 10:10:54 / 修改时间：10:47:36" itemprop="dateCreated datePublished" datetime="2019-10-14T10:10:54+08:00">2019-10-14</time>
+            </span>
+          
+            
+
+            
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/NSM/" itemprop="url" rel="index"><span itemprop="name">NSM</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+
+        </div>
+      </header>
+
     
-    <div class="collection-year">
-      <h1 class="collection-header">2019</h1>
-    </div>
-  
+    
+    
+    <div class="post-body" itemprop="articleBody">
 
-  <article itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
+      
+        <p>​        由于是云环境, 很多优化网卡的操作都没有办法进行, 以下是能够执行的一些操作。</p>
+<h1 id="网卡优化"><a href="#网卡优化" class="headerlink" title="网卡优化"></a>网卡优化</h1><h2 id="设置RX队列大小"><a href="#设置RX队列大小" class="headerlink" title="设置RX队列大小"></a>设置RX队列大小</h2><ol>
+<li><strong>查看当前 Ring Buffer 大小</strong></li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">$ ethtool -g ens3</span><br><span class="line">Ring parameters <span class="keyword">for</span> ens3:</span><br><span class="line">Pre-set maximums:</span><br><span class="line">RX:		4096</span><br><span class="line">RX Mini:	0</span><br><span class="line">RX Jumbo:	0</span><br><span class="line">TX:		4096</span><br><span class="line">Current hardware settings:</span><br><span class="line">RX:		512</span><br><span class="line">RX Mini:	0</span><br><span class="line">RX Jumbo:	0</span><br><span class="line">TX:		1024</span><br></pre></td></tr></table></figure>
 
-      <div class="post-meta">
-        <time itemprop="dateCreated"
-              datetime="2019-10-14T10:45:12+08:00"
-              content="2019-10-14">
-          10-14
-        </time>
-      </div>
+<p>看到 RX 和 TX 最大是 4096，当前RX值为 512。<strong>队列越大丢包的可能越小，但数据延迟会增加!</strong></p>
+<ol start="2">
+<li><strong>设置 RX 队列大小</strong></li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">$ ethtool -G ens3 rx 4096</span><br><span class="line">$ ethtool -g ens3</span><br><span class="line">Ring parameters <span class="keyword">for</span> ens3:</span><br><span class="line">Pre-set maximums:</span><br><span class="line">RX:		4096</span><br><span class="line">RX Mini:	0</span><br><span class="line">RX Jumbo:	0</span><br><span class="line">TX:		4096</span><br><span class="line">Current hardware settings:</span><br><span class="line">RX:		4096</span><br><span class="line">RX Mini:	0</span><br><span class="line">RX Jumbo:	0</span><br><span class="line">TX:		1024</span><br></pre></td></tr></table></figure>
 
-      <h2 class="post-title">
-        
-          <a class="post-title-link" href="/2019/10/14/Suricata - Lua Output/" itemprop="url">
-            <span itemprop="name">Suricata - Lua Output Script</span>
-          </a>
-        
-      </h2>
+<h1 id="PFring性能优化和网卡参数修改"><a href="#PFring性能优化和网卡参数修改" class="headerlink" title="PFring性能优化和网卡参数修改"></a>PFring性能优化和网卡参数修改</h1><ol>
+<li>关闭网卡多余功能，提高网卡性能</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ vim /etc/rc.local</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> rx tx sg tso ufo gso gro lro rxhash highdma; <span class="keyword">do</span> ethtool -K ens3 <span class="variable">$i</span> off; <span class="keyword">done</span></span><br></pre></td></tr></table></figure>
 
-    </header>
-  </article>
+<p>临时关闭</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 官方建议</span></span><br><span class="line">$ ethtool -K ens3 tso off gro off lro off gso off rx off tx off sg off rxhash off txvlan off</span><br></pre></td></tr></table></figure>
 
-
-
-  
-  
-
-  
-
-  <article itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <div class="post-meta">
-        <time itemprop="dateCreated"
-              datetime="2019-10-14T10:32:54+08:00"
-              content="2019-10-14">
-          10-14
-        </time>
-      </div>
-
-      <h2 class="post-title">
-        
-          <a class="post-title-link" href="/2019/10/14/我在'云'上的日子 - Zeek(部署)/" itemprop="url">
-            <span itemprop="name">我在'云'上的日子 - Zeek(部署)</span>
-          </a>
-        
-      </h2>
-
-    </header>
-  </article>
-
-
-
-  
-  
-
-  
-
-  <article itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <div class="post-meta">
-        <time itemprop="dateCreated"
-              datetime="2019-10-14T10:10:54+08:00"
-              content="2019-10-14">
-          10-14
-        </time>
-      </div>
-
-      <h2 class="post-title">
-        
-          <a class="post-title-link" href="/2019/10/14/我在'云'上的日子 - Suricata(优化)/" itemprop="url">
-            <span itemprop="name">我在'云'上的日子 - Suricata(优化)</span>
-          </a>
-        
-      </h2>
-
-    </header>
-  </article>
-
-
-
-  
-  
-
-  
-
-  <article itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <div class="post-meta">
-        <time itemprop="dateCreated"
-              datetime="2019-10-14T09:53:54+08:00"
-              content="2019-10-14">
-          10-14
-        </time>
-      </div>
-
-      <h2 class="post-title">
-        
-          <a class="post-title-link" href="/2019/10/14/我在'云'上的日子 - Suricata(部署)/" itemprop="url">
-            <span itemprop="name">我在'云'上的日子 - Suricata(部署)</span>
-          </a>
-        
-      </h2>
-
-    </header>
-  </article>
-
-
-
-  
-  
-
-  
-
-  <article itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <div class="post-meta">
-        <time itemprop="dateCreated"
-              datetime="2019-10-12T16:24:30+08:00"
-              content="2019-10-12">
-          10-12
-        </time>
-      </div>
-
-      <h2 class="post-title">
-        
-          <a class="post-title-link" href="/2019/10/12/我在'云'上的日子 - AWS上流量镜像(Suricata)遇到的坑/" itemprop="url">
-            <span itemprop="name">我在'云'上的日子 - AWS上流量镜像(Suricata)遇到的坑</span>
-          </a>
-        
-      </h2>
-
-    </header>
-  </article>
-
-
-
-  
-  
-
-  
-
-  <article itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <div class="post-meta">
-        <time itemprop="dateCreated"
-              datetime="2019-10-08T13:34:51+08:00"
-              content="2019-10-08">
-          10-08
-        </time>
-      </div>
-
-      <h2 class="post-title">
-        
-          <a class="post-title-link" href="/2019/10/08/Scrapy - haveibeenpwned/" itemprop="url">
-            <span itemprop="name">Scrapy + Splash 实现动态网页爬取</span>
-          </a>
-        
-      </h2>
-
-    </header>
-  </article>
-
-
-
-  
-  
-
-  
-
-  <article itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <div class="post-meta">
-        <time itemprop="dateCreated"
-              datetime="2019-10-04T22:38:54+08:00"
-              content="2019-10-04">
-          10-04
-        </time>
-      </div>
-
-      <h2 class="post-title">
-        
-          <a class="post-title-link" href="/2019/10/04/hello-world/" itemprop="url">
-            <span itemprop="name">Hello World</span>
-          </a>
-        
-      </h2>
-
-    </header>
-  </article>
-
-
-
+<p>参考:</p>
+<ul>
+<li><a href="https://redmine.openinfosecfoundation.org/projects/suricata/wiki/File_Extraction" target="_blank" rel="noopener">https://redmine.openinfosecfoundation.org/projects/suricata/wiki/File_Extraction</a></li>
+</ul>
 
     </div>
+
+    
+    
+    
+        
+      
+        <div id="reward-container">
+  <div>坚持原创技术分享，您的支持将鼓励我继续创作！</div>
+  <button id="reward-button" disable="enable" onclick="var qr = document.getElementById(&quot;qr&quot;); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    鼓励
+  </button>
+  <div id="qr" style="display: none;">
+        
+      
+      <div style="display: inline-block">
+        <img src="/images/wechatpay.png" alt="Canon 微信支付">
+        <p>微信支付</p>
+      </div>
+        
+      
+      <div style="display: inline-block">
+        <img src="/images/alipay.png" alt="Canon 支付宝">
+        <p>支付宝</p>
+      </div>
+
   </div>
+</div>
+
+      
+
+      <footer class="post-footer">
+          
+            
+          
+          <div class="post-tags">
+            
+              <a href="/tags/Suricata/" rel="tag"># Suricata</a>
+            
+          </div>
+        
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-next post-nav-item">
+              
+                <a href="/2019/10/14/我在'云'上的日子 - Suricata(部署)/" rel="next" title="我在'云'上的日子 - Suricata(部署)">
+                  <i class="fa fa-chevron-left"></i> 我在'云'上的日子 - Suricata(部署)
+                </a>
+              
+            </div>
+
+            <span class="post-nav-divider"></span>
+
+            <div class="post-nav-prev post-nav-item">
+              
+                <a href="/2019/10/14/我在'云'上的日子 - Zeek(部署)/" rel="prev" title="我在'云'上的日子 - Zeek(部署)">
+                  我在'云'上的日子 - Zeek(部署) <i class="fa fa-chevron-right"></i>
+                </a>
+              
+            </div>
+          </div>
+        
+      </footer>
+    
+  </article>
   
   
   
 
-  
-
+  </div>
 
 
           </div>
@@ -517,6 +429,11 @@
 
   <aside class="sidebar">
     <div class="sidebar-inner">
+        
+        
+        
+        
+      
 
       <ul class="sidebar-nav motion-element">
         <li class="sidebar-nav-toc">
@@ -529,6 +446,8 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#网卡优化"><span class="nav-number">1.</span> <span class="nav-text">网卡优化</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#设置RX队列大小"><span class="nav-number">1.1.</span> <span class="nav-text">设置RX队列大小</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#PFring性能优化和网卡参数修改"><span class="nav-number">2.</span> <span class="nav-text">PFring性能优化和网卡参数修改</span></a></li></ol></div>
+        
       </div>
       <!--/noindex-->
 
