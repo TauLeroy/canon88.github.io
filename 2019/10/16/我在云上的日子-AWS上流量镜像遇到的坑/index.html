@@ -75,7 +75,7 @@
 <meta property="og:image" content="http://yoursite.com/2019/10/16/我在云上的日子-AWS上流量镜像遇到的坑/image-20191016153028228.png">
 <meta property="og:image" content="http://yoursite.com/2019/10/16/我在云上的日子-AWS上流量镜像遇到的坑/image-20191016154823748.png">
 <meta property="og:image" content="http://yoursite.com/2019/10/16/我在云上的日子-AWS上流量镜像遇到的坑/image-20191016155112376.png">
-<meta property="og:updated_time" content="2019-10-16T12:56:51.961Z">
+<meta property="og:updated_time" content="2019-10-16T14:32:29.599Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="我在&#39;云&#39;上的日子 - AWS上流量镜像遇到的坑">
 <meta name="twitter:description" content="​     ​        自从AWS在6月份新出了Traffic Mirroring功能后, 我也算是第一时间使用了这个功能。与传统的交换机流量镜像不同的是, AWS上是将流量镜像后的数据通过VXLAN协议发送至流量分析引擎(Suricata、Zeek)。正是由于这一点让我碰到了以下几个问题, 这里写出来希望对大家有所帮助。  接收流量镜像的目标端, 也就是我们常说的流量分析引擎端是有接收限制">
@@ -310,7 +310,7 @@
                 
               
 
-              <time title="创建时间：2019-10-16 17:24:30 / 修改时间：20:56:51" itemprop="dateCreated datePublished" datetime="2019-10-16T17:24:30+08:00">2019-10-16</time>
+              <time title="创建时间：2019-10-16 17:24:30 / 修改时间：22:32:29" itemprop="dateCreated datePublished" datetime="2019-10-16T17:24:30+08:00">2019-10-16</time>
             </span>
           
             
@@ -367,7 +367,7 @@
 <p>​        For example, if an 8996 byte packet is mirrored, and the traffic mirror target MTU value is 9001 bytes, the mirror encapsulation results in the mirrored packet being greater than the MTU value. In this case, the mirror packet is truncated. To prevent mirror packets from being truncated, set the traffic mirror source interface MTU value to 54 bytes less than the traffic mirror target MTU value. For more information about configuring the network MTU value, see Network Maximum Transmission Unit (MTU) for Your EC2 Instance in the <em>Amazon EC2 User Guide for Linux Instances</em>.</p>
 <p>​        例如，如果对8996字节的数据包进行了镜像，并且流量镜像目标MTU值为9001字节，则镜像封装会导致镜像的数据包大于MTU值。在这种情况下，镜像数据包将被截断。为防止镜像数据包被截断，请将流量镜像源接口的MTU值设置为比流量镜像目标MTU值小54个字节。有关配置网络MTU值的更多信息，请参阅Amazon EC2 Linux实例用户指南中的EC2实例的网络最大传输单位（MTU）。</p>
 <hr>
-<p><strong>关于VXLAN导致Suricata无法正常解析数据的问题, 特地进行了复现:</strong></p>
+<p><strong>关于VXLAN导致Suricata无法正常解析数据的问题, 特地进行了测试:</strong></p>
 <p>准备工作:</p>
 <ul>
 <li>新建了<strong>test_files</strong>文件, 该文件只包含内容’<strong>hello, world!</strong>‘;</li>
