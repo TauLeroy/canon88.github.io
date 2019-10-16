@@ -55,18 +55,18 @@
   };
 </script>
 
-  <meta name="description" content="​        由于是云环境, 很多优化网卡的操作都没有办法进行, 以下是能够执行的一些操作。 参考:  https://paper.seebug.org/1054/  设置Ring Buffer1. 查看当前 Ring Buffer 大小 123456789101112$ ethtool -g ens3Ring parameters for ens3:Pre-set maximums:RX:">
+  <meta name="description" content="​        由于是云环境, 很多优化网卡的操作都没有办法进行, 以下是能够执行的一些操作。 设置Ring Buffer1. 查看当前 Ring Buffer 大小 123456789101112$ ethtool -g ens3Ring parameters for ens3:Pre-set maximums:RX:		4096RX Mini:	0RX Jumbo:	0TX:		4096Cu">
 <meta name="keywords" content="Suricata">
 <meta property="og:type" content="article">
 <meta property="og:title" content="我在&#39;云&#39;上的日子 - Suricata(优化)">
 <meta property="og:url" content="http://yoursite.com/2019/10/14/我在云上的日子 - Suricata优化/index.html">
 <meta property="og:site_name" content="Canon&#39;s Blog">
-<meta property="og:description" content="​        由于是云环境, 很多优化网卡的操作都没有办法进行, 以下是能够执行的一些操作。 参考:  https://paper.seebug.org/1054/  设置Ring Buffer1. 查看当前 Ring Buffer 大小 123456789101112$ ethtool -g ens3Ring parameters for ens3:Pre-set maximums:RX:">
+<meta property="og:description" content="​        由于是云环境, 很多优化网卡的操作都没有办法进行, 以下是能够执行的一些操作。 设置Ring Buffer1. 查看当前 Ring Buffer 大小 123456789101112$ ethtool -g ens3Ring parameters for ens3:Pre-set maximums:RX:		4096RX Mini:	0RX Jumbo:	0TX:		4096Cu">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2019-10-14T13:24:34.201Z">
+<meta property="og:updated_time" content="2019-10-14T13:21:18.803Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="我在&#39;云&#39;上的日子 - Suricata(优化)">
-<meta name="twitter:description" content="​        由于是云环境, 很多优化网卡的操作都没有办法进行, 以下是能够执行的一些操作。 参考:  https://paper.seebug.org/1054/  设置Ring Buffer1. 查看当前 Ring Buffer 大小 123456789101112$ ethtool -g ens3Ring parameters for ens3:Pre-set maximums:RX:">
+<meta name="twitter:description" content="​        由于是云环境, 很多优化网卡的操作都没有办法进行, 以下是能够执行的一些操作。 设置Ring Buffer1. 查看当前 Ring Buffer 大小 123456789101112$ ethtool -g ens3Ring parameters for ens3:Pre-set maximums:RX:		4096RX Mini:	0RX Jumbo:	0TX:		4096Cu">
   <link rel="canonical" href="http://yoursite.com/2019/10/14/我在云上的日子 - Suricata优化/">
 
 
@@ -284,7 +284,7 @@
                 
               
 
-              <time title="创建时间：2019-10-14 10:10:54 / 修改时间：21:24:34" itemprop="dateCreated datePublished" datetime="2019-10-14T10:10:54+08:00">2019-10-14</time>
+              <time title="创建时间：2019-10-14 10:10:54 / 修改时间：21:21:18" itemprop="dateCreated datePublished" datetime="2019-10-14T10:10:54+08:00">2019-10-14</time>
             </span>
           
             
@@ -317,10 +317,6 @@
 
       
         <p>​        由于是云环境, 很多优化网卡的操作都没有办法进行, 以下是能够执行的一些操作。</p>
-<p>参考:</p>
-<ul>
-<li><a href="https://paper.seebug.org/1054/" target="_blank" rel="noopener">https://paper.seebug.org/1054/</a></li>
-</ul>
 <h2 id="设置Ring-Buffer"><a href="#设置Ring-Buffer" class="headerlink" title="设置Ring Buffer"></a>设置Ring Buffer</h2><p><strong>1. 查看当前 Ring Buffer 大小</strong></p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">$ ethtool -g ens3</span><br><span class="line">Ring parameters <span class="keyword">for</span> ens3:</span><br><span class="line">Pre-set maximums:</span><br><span class="line">RX:		4096</span><br><span class="line">RX Mini:	0</span><br><span class="line">RX Jumbo:	0</span><br><span class="line">TX:		4096</span><br><span class="line">Current hardware settings:</span><br><span class="line">RX:		1024	<span class="comment"># 看到 RX 和 TX 最大是 4096，当前RX值为 1024。</span></span><br><span class="line">RX Mini:	0</span><br><span class="line">RX Jumbo:	0</span><br><span class="line">TX:		1024</span><br></pre></td></tr></table></figure>
 
