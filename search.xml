@@ -284,44 +284,6 @@
       </tags>
   </entry>
   <entry>
-    <title>我在'云'上的日子 - Suricata(优化)</title>
-    <url>/2019/10/14/%E6%88%91%E5%9C%A8%E4%BA%91%E4%B8%8A%E7%9A%84%E6%97%A5%E5%AD%90%20-%20Suricata%E4%BC%98%E5%8C%96/</url>
-    <content><![CDATA[<p>​        由于是云环境, 很多优化网卡的操作都没有办法进行, 以下是能够执行的一些操作。</p>
-<p>参考:</p>
-<ul>
-<li><a href="https://paper.seebug.org/1054/" target="_blank" rel="noopener">https://paper.seebug.org/1054/</a></li>
-</ul>
-<h2 id="设置Ring-Buffer"><a href="#设置Ring-Buffer" class="headerlink" title="设置Ring Buffer"></a>设置Ring Buffer</h2><p><strong>1. 查看当前 Ring Buffer 大小</strong></p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ ethtool -g ens3</span><br><span class="line">Ring parameters <span class="keyword">for</span> ens3:</span><br><span class="line">Pre-set maximums:</span><br><span class="line">RX:		4096</span><br><span class="line">RX Mini:	0</span><br><span class="line">RX Jumbo:	0</span><br><span class="line">TX:		4096</span><br><span class="line">Current hardware settings:</span><br><span class="line">RX:		1024	<span class="comment"># 看到 RX 和 TX 最大是 4096，当前RX值为 1024。</span></span><br><span class="line">RX Mini:	0</span><br><span class="line">RX Jumbo:	0</span><br><span class="line">TX:		1024</span><br></pre></td></tr></table></figure>
-
-<p><strong>网卡ring buffer 的值并非越大越好, 这里将原来1024降到512。队列越大丢包的可能越小，但数据延迟会增加!</strong></p>
-<hr>
-<p><strong>2. 设置 RX 队列大小</strong></p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ ethtool -G ens3 rx 512</span><br><span class="line">$ ethtool -g ens3</span><br><span class="line">Ring parameters <span class="keyword">for</span> ens3:</span><br><span class="line">Pre-set maximums:</span><br><span class="line">RX:		4096</span><br><span class="line">RX Mini:	0</span><br><span class="line">RX Jumbo:	0</span><br><span class="line">TX:		4096</span><br><span class="line">Current hardware settings:</span><br><span class="line">RX:		512</span><br><span class="line">RX Mini:	0</span><br><span class="line">RX Jumbo:	0</span><br><span class="line">TX:		1024</span><br></pre></td></tr></table></figure>
-
-<h2 id="设置最大传输单元"><a href="#设置最大传输单元" class="headerlink" title="设置最大传输单元"></a>设置最大传输单元</h2><p><strong><em>巨型帧 将最大传输单元增加到9000, 默认1500。数据包越小产生的CPU中断越多</em></strong></p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ sudo ifconfig ens4 mtu 9000</span><br></pre></td></tr></table></figure>
-
-<h2 id="设置网卡卸载"><a href="#设置网卡卸载" class="headerlink" title="设置网卡卸载"></a>设置网卡卸载</h2><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 官方建议</span></span><br><span class="line">$ ethtool -K ens4 tso off gro off lro off gso off rx off tx off sg off rxhash off txvlan off rxvlan off ntuple off</span><br></pre></td></tr></table></figure>
-
-<p><strong>参考:</strong></p>
-<ul>
-<li><a href="https://redmine.openinfosecfoundation.org/projects/suricata/wiki/File_Extraction" target="_blank" rel="noopener">https://redmine.openinfosecfoundation.org/projects/suricata/wiki/File_Extraction</a></li>
-</ul>
-<h2 id="设置PF-Ring"><a href="#设置PF-Ring" class="headerlink" title="设置PF_Ring"></a>设置PF_Ring</h2><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ <span class="built_in">cd</span> PF_RING/kernel</span><br><span class="line">$ sudo rmmod pf_ring</span><br><span class="line">$ sudo insmod pf_ring.ko min_num_slots=65536 transparent_mode=0 enable_tx_capture=0</span><br><span class="line"></span><br><span class="line">$ cat /proc/net/pf_ring/info</span><br><span class="line">PF_RING Version          : 7.4.0 (7.4.0-stable:9cedf7ba27dd9798812906809ac54aa3c17ff346)</span><br><span class="line">Total rings              : 36</span><br><span class="line"></span><br><span class="line">Standard (non ZC) Options</span><br><span class="line">Ring slots               : 65536</span><br><span class="line">Slot version             : 17</span><br><span class="line">Capture TX               : No [RX only]</span><br><span class="line">IP Defragment            : No</span><br><span class="line">Socket Mode              : Standard</span><br><span class="line">Cluster Fragment Queue   : 0</span><br><span class="line">Cluster Fragment Discard : 0</span><br></pre></td></tr></table></figure>
-
-<h2 id="内核优化"><a href="#内核优化" class="headerlink" title="内核优化"></a>内核优化</h2><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">sudo sysctl net.core.rmem_default=73400320</span><br><span class="line">sudo sysctl net.core.wmem_max=134217728</span><br><span class="line">sudo sysctl net.core.rmem_max=134217728</span><br><span class="line">sudo sysctl net.core.netdev_max_backlog=300000</span><br><span class="line">sudo sysctl net.ipv4.tcp_no_metrics_save=1</span><br><span class="line">sudo sysctl net.ipv4.tcp_congestion_control=htcp</span><br><span class="line">sudo sysctl net.ipv4.tcp_mtu_probing=1</span><br><span class="line">sudo sysctl net.ipv4.tcp_rmem=<span class="string">"100000000 100000000 100000000"</span></span><br><span class="line">sudo sysctl net.ipv4.tcp_wmem=<span class="string">"100000000 100000000 100000000"</span></span><br><span class="line">sudo sysctl net.ipv4.tcp_mem=<span class="string">"100000000 100000000 100000000"</span></span><br><span class="line">sudo sysctl net.core.netdev_budget=3000</span><br><span class="line">sudo sysctl -p</span><br></pre></td></tr></table></figure>
-
-<h2 id="配置优化"><a href="#配置优化" class="headerlink" title="配置优化"></a>配置优化</h2><p><strong>参考</strong>: <a href="https://paper.seebug.org/1054/" target="_blank" rel="noopener">https://paper.seebug.org/1054/</a></p>
-]]></content>
-      <categories>
-        <category>NSM</category>
-      </categories>
-      <tags>
-        <tag>Suricata</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>我在'云'上的日子 - Suricata(部署)</title>
     <url>/2019/10/14/%E6%88%91%E5%9C%A8%E4%BA%91%E4%B8%8A%E7%9A%84%E6%97%A5%E5%AD%90%20-%20Suricata%E9%83%A8%E7%BD%B2/</url>
     <content><![CDATA[<h1 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h1><h2 id="PF-RING"><a href="#PF-RING" class="headerlink" title="PF_RING"></a>PF_RING</h2><p><strong>1. pf_ring</strong></p>
