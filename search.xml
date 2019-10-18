@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
-    <title>Wazuh CDB list</title>
+    <title>Wazuh - 黑名单匹配告警(CDB list)</title>
     <url>/2019/10/18/Wazuh-Using-CDB-lists/</url>
     <content><![CDATA[<p><strong>需求:</strong></p>
 <p>​        现有一批高危用户, 需要实时关注该账号的登录情况。由于之前已经写好了一个针对用户登录账号的审计规则, 因此, 这里需要用到<strong><a href="https://documentation.wazuh.com/3.10/user-manual/ruleset/cdb-list.html" target="_blank" rel="noopener">Wazuh CDB list</a></strong>这个功能(<em>此功能主要用例是创建用户，IP或域名的白/黑列表。</em>)消费审计规则数据即可。</p>
