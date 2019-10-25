@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
-    <title>Suricata+Lua实现本地情报对接</title>
+    <title>Suricata + Lua实现本地情报对接</title>
     <url>/2019/10/24/Suricata+Lua%E5%AE%9E%E7%8E%B0%E6%9C%AC%E5%9C%B0%E6%83%85%E6%8A%A5%E5%AF%B9%E6%8E%A5/</url>
     <content><![CDATA[<h1 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h1><p>​        由于近期网站遭受恶意攻击, 通过对于登录接口的审计与分析, 现已确定了一批可疑账号。既然之前写过一个登录接口的审计脚本, 那么完全可以通过扩展这个脚本来实现对于可疑账号的比对。主要思路: 通过将可疑账号存进Redis中, 再利用Lua脚本调用Redis接口进行账号的比对。</p>
 <p>先说一下<strong>Suricata</strong>默认是存在黑名单机制的, 如下:</p>
