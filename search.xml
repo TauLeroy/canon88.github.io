@@ -1,6 +1,44 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title>Redis Key 过期事件订阅</title>
+    <url>/2019/12/24/Redis-Key-%E8%BF%87%E6%9C%9F%E4%BA%8B%E4%BB%B6%E8%AE%A2%E9%98%85/</url>
+    <content><![CDATA[<h3 id="需求"><a href="#需求" class="headerlink" title="需求"></a>需求</h3><p>​        在自建企业内部威胁情报的过程中, 需要通过<strong>Redis</strong>统一管理过期时间的<strong>Key</strong>。那么如何对过期的<strong>Key</strong>进行实时监听, 并进行回调处理?</p>
+<h3 id="思路"><a href="#思路" class="headerlink" title="思路"></a>思路</h3><p>​        在 <strong>Redis</strong> 的 <strong>2.8.0</strong> 版本之后，其推出了一个新的特性——键空间消息（Redis Keyspace Notifications），它配合 2.0.0 版本之后的 SUBSCRIBE 就能完成这个定时任务的操作了。</p>
+<p><strong>Redis 的键空间通知支持 订阅指定 Key 的所有事件 与 订阅指定事件 两种方式。</strong></p>
+<blockquote>
+<p>Keyspace notifications are implemented sending two distinct type of events for every operation affecting the Redis data space. For instance a DEL operation targeting the key named mykey in database 0 will trigger the delivering of two messages, exactly equivalent to the following two PUBLISH commands:</p>
+</blockquote>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">PUBLISH __keyspace@0__:mykey del</span><br><span class="line">PUBLISH __keyevent@0__:del mykey</span><br></pre></td></tr></table></figure>
+
+<p><strong>通过 Redis 的键空间通知（keyspace notification）可以做到：将IoC数据写入Redis，设置过期时间10分钟，利用 Redis 键过期回调提醒，如果未被消费，则进行处理。</strong></p>
+<h3 id="实现"><a href="#实现" class="headerlink" title="实现"></a>实现</h3><h4 id="1-修改-redis-conf-开启redis-key过期提醒"><a href="#1-修改-redis-conf-开启redis-key过期提醒" class="headerlink" title="1. 修改 redis.conf 开启redis key过期提醒"></a>1. 修改 redis.conf 开启redis key过期提醒</h4><blockquote>
+<p>By default keyspace events notifications are disabled because while not very sensible the feature uses some CPU power. Notifications are enabled using the notify-keyspace-events of redis.conf or via the CONFIG SET.</p>
+</blockquote>
+<p>由于键空间通知比较耗CPU, 所以 Redis默认是关闭键空间事件通知的， 需要手动开启 <code>notify-keyspace-events</code>后才启作用。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">K：keyspace事件，事件以__keyspace@&lt;db&gt;__为前缀进行发布；        </span><br><span class="line">E：keyevent事件，事件以__keyevent@&lt;db&gt;__为前缀进行发布；        </span><br><span class="line">g：一般性的，非特定类型的命令，比如del，expire，rename等；       </span><br><span class="line">$：String 特定命令；        </span><br><span class="line">l：List 特定命令；        </span><br><span class="line">s：Set 特定命令；        </span><br><span class="line">h：Hash 特定命令；        </span><br><span class="line">z：Sorted 特定命令；        </span><br><span class="line">x：过期事件，当某个键过期并删除时会产生该事件；        </span><br><span class="line">e：驱逐事件，当某个键因maxmemore策略而被删除时，产生该事件；        </span><br><span class="line">A：g<span class="variable">$lshzxe</span>的别名，因此”AKE”意味着所有事件。</span><br></pre></td></tr></table></figure>
+
+<p><strong><code>notify-keyspace-events Ex</code> 表示开启键过期事件提醒</strong></p>
+<p><strong>redis.conf</strong></p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># RDB Config</span></span><br><span class="line">databases 16</span><br><span class="line">save 900 1</span><br><span class="line">save 300 10</span><br><span class="line">save 60 10000</span><br><span class="line">stop-writes-on-bgsave-error yes</span><br><span class="line">rdbcompression yes</span><br><span class="line">rdbchecksum no</span><br><span class="line">dir ./</span><br><span class="line"><span class="comment"># AOF Config</span></span><br><span class="line">appendonly yes</span><br><span class="line">appendfilename <span class="string">"appendonly.aof"</span></span><br><span class="line">appendfsync everysec</span><br><span class="line">no-appendfsync-on-rewrite no</span><br><span class="line">auto-aof-rewrite-percentage 100</span><br><span class="line">auto-aof-rewrite-min-size 64mb</span><br><span class="line"><span class="comment"># set Password</span></span><br><span class="line">requirepass %&#123;mypassword&#125;</span><br><span class="line"><span class="comment"># set notify-keyspace-events</span></span><br><span class="line">notify-keyspace-events Ex</span><br></pre></td></tr></table></figure>
+
+<h4 id="2-RedisHelper"><a href="#2-RedisHelper" class="headerlink" title="2. RedisHelper"></a>2. RedisHelper</h4><figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="comment"># Author: Canon</span></span><br><span class="line"><span class="comment"># Date: 2019-12-27</span></span><br><span class="line"><span class="comment"># Version: 0.2</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> redis</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">RedisHelper</span><span class="params">()</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self)</span>:</span></span><br><span class="line">        <span class="comment"># 连接Redis</span></span><br><span class="line">        self.__conn = redis.Redis(host=<span class="string">'127.0.0.1'</span>, port=<span class="number">6379</span>, password=<span class="string">'mypassword'</span>, db=<span class="number">0</span>)</span><br><span class="line">        <span class="comment"># 定义keyevent, 此处0为indexdb</span></span><br><span class="line">        self.keyevent = <span class="string">'__keyevent@0__:expired'</span></span><br><span class="line">        </span><br><span class="line">    <span class="comment"># 发布方法</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">publish</span><span class="params">(self, key, msg)</span>:</span></span><br><span class="line">        ttl = <span class="number">10</span></span><br><span class="line">        self.__conn.setex(key, msg, ttl)</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">True</span></span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 订阅方法</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">subscribe</span><span class="params">(self)</span>:</span></span><br><span class="line">        sub = self.__conn.pubsub()</span><br><span class="line">        sub.subscribe(self.keyevent)</span><br><span class="line">        <span class="keyword">for</span> msg <span class="keyword">in</span> sub.listen():</span><br><span class="line">            <span class="keyword">if</span> msg[<span class="string">'type'</span>] == <span class="string">'message'</span>:</span><br><span class="line">                ex_key = msg[<span class="string">'data'</span>].decode()</span><br><span class="line">                print(ex_key)</span><br></pre></td></tr></table></figure>
+
+<h3 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h3><ul>
+<li><p><strong><a href="https://crazyfzw.github.io/2019/03/26/redis-keyspace-notifications/" target="_blank" rel="noopener">订阅 Redis 的 key 过期事件实现动态定时任务</a></strong></p>
+</li>
+<li><p><strong><a href="https://segmentfault.com/a/1190000016898228" target="_blank" rel="noopener">python开发-实现redis中的发布订阅功能</a></strong></p>
+</li>
+</ul>
+]]></content>
+      <categories>
+        <category>Redis</category>
+      </categories>
+      <tags>
+        <tag>Redis</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>Scrapyd + Scrapyd-Client</title>
     <url>/2019/12/19/Scrapyd%20+%20Scrapyd-Client/</url>
     <content><![CDATA[<h1 id="需求"><a href="#需求" class="headerlink" title="需求"></a>需求</h1><p>​        由于网站时常遭受黑客攻击, 现准备将手头一些攻击者的IP地址收集起来用做企业内部的威胁情报。既然要着手做威胁情报, 那么就避免不了通过一些网站进行数据的丰富化。要想简单省事儿, 当然是使用购买api账号的方式,不过有的api也很坑, 除非购买的是企业版, 否则个人版的api会受到请求速率的限制。所以这边只能依靠爬虫(<strong>Scrapy</strong>)来收集数据。但是采用了分布式爬虫, 就避免不了需要进行集中管理, 以及统一下等操作。下面就说下利用<strong>Scrapy</strong>官方提供的爬虫管理工具(<strong>Scrapyd</strong>)来满足以上的需求。</p>
