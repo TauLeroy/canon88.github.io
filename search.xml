@@ -1,6 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title>Logstash Event API</title>
+    <url>/2019/12/30/Logstash-Event-API/</url>
+    <content><![CDATA[<h4 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h4><p>​        由于项目需要, 用到了<code>Ruby</code>对Logstash进行一些定制化的配置。翻遍了整个Logstash的官方文档, 对于Ruby API的介绍就写了两个方法。<code>get</code> 与 <code>set</code> 也是醉了😂, 幸好谷歌一下…</p>
+<h4 id="解决方案"><a href="#解决方案" class="headerlink" title="解决方案"></a>解决方案</h4><ul>
+<li>删除事件：cancel</li>
+<li>取消删除事件：uncancel</li>
+<li>是否删除：cancelled?</li>
+<li>是否包含字段：include?</li>
+<li>删除字段：remove</li>
+<li>事件转字符串：to_s</li>
+<li>事件转hash字典（不含metadata字段）：to_hash</li>
+<li>事件转hash字典（含metadata字段）：to_hash_with_metadata</li>
+<li>事件转json字符串：to_json</li>
+<li>增加tag：tag</li>
+<li>取事件时间戳：timestamp</li>
+</ul>
+<p><strong>更多查询官方接口源码:</strong> <a href="https://github.com/elastic/logstash/blob/master/logstash-core/src/main/java/org/logstash/ext/JrubyEventExtLibrary.java" target="_blank" rel="noopener"><strong>JrubyEventExtLibrary.java</strong></a></p>
+<h4 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h4><ul>
+<li><strong><a href="https://blog.csdn.net/mvpboss1004/article/details/78070300" target="_blank" rel="noopener">Lostash event API详解</a></strong></li>
+<li><a href="https://github.com/elastic/logstash/blob/master/logstash-core/src/main/java/org/logstash/ext/JrubyEventExtLibrary.java" target="_blank" rel="noopener"><strong>JrubyEventExtLibrary.java</strong></a></li>
+<li><strong><a href="https://www.rubydoc.info/gems/logstash-event/1.1.5/LogStash/Event#cancel-instance_method" target="_blank" rel="noopener">Class: LogStash::Event</a></strong></li>
+</ul>
+]]></content>
+  </entry>
+  <entry>
     <title>Logstash Multiple Pipelines</title>
     <url>/2019/12/30/Logstash-Multiple-Pipelines/</url>
     <content><![CDATA[<h4 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h4><p>当Logstash要处理的多个input类型时, 最常见的两种解决方案(<strong>不推荐</strong>):</p>
