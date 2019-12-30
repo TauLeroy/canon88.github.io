@@ -24,6 +24,12 @@
 <li><strong><a href="https://www.rubydoc.info/gems/logstash-event/1.1.5/LogStash/Event#cancel-instance_method" target="_blank" rel="noopener">Class: LogStash::Event</a></strong></li>
 </ul>
 ]]></content>
+      <categories>
+        <category>ELK</category>
+      </categories>
+      <tags>
+        <tag>Logstash</tag>
+      </tags>
   </entry>
   <entry>
     <title>Logstash Multiple Pipelines</title>
