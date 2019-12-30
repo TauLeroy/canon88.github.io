@@ -296,7 +296,7 @@
                 
               
 
-              <time title="创建时间：2019-12-30 15:17:17 / 修改时间：15:18:58" itemprop="dateCreated datePublished" datetime="2019-12-30T15:17:17+08:00">2019-12-30</time>
+              <time title="创建时间：2019-12-30 15:17:17 / 修改时间：15:20:23" itemprop="dateCreated datePublished" datetime="2019-12-30T15:17:17+08:00">2019-12-30</time>
             </span>
           
             
@@ -366,7 +366,7 @@
 <p><code>/etc/supervisord.d/logstash.ini</code></p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">[program:logstash]</span><br><span class="line"><span class="built_in">command</span>=/usr/share/logstash/bin/logstash --path.data /lingtian/data/logstash/</span><br><span class="line"><span class="comment">#user=logstash</span></span><br><span class="line">numprocs=1</span><br><span class="line">autostart=<span class="literal">true</span></span><br><span class="line">autorestart=<span class="literal">true</span></span><br><span class="line">startsecs=1</span><br><span class="line">startretries=3</span><br><span class="line">exitcodes=0,2</span><br><span class="line">stopsignal=INT</span><br><span class="line">redirect_stderr=<span class="literal">true</span></span><br><span class="line">stdout_logfile_maxbytes=1MB</span><br><span class="line">stdout_logfile_backups=5</span><br><span class="line">stdout_capture_maxbytes=1MB</span><br><span class="line">stdout_logfile=/lingtian/logs/logstash/logstash.log</span><br></pre></td></tr></table></figure>
 
-<h5 id="启停"><a href="#启停" class="headerlink" title="启停"></a>启停</h5><p>可通过使用参数, <code>--config.reload.automatic</code> or <code>-r</code> 在配置文件发生更改后自动检测并重新加载配置。</p>
+<h5 id="加载配置文件"><a href="#加载配置文件" class="headerlink" title="加载配置文件"></a>加载配置文件</h5><p>可通过使用参数, <code>--config.reload.automatic</code> or <code>-r</code> 在配置文件发生更改后自动检测并重新加载配置。</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ bin/logstash -f apache.config --config.reload.automatic</span><br></pre></td></tr></table></figure>
 
 <p>默认3秒检查配置文件, 可以通过使用参数, <code>--config.reload.interval</code>修改秒数。</p>

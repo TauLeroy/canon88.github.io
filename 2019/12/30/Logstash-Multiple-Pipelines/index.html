@@ -63,7 +63,7 @@
 <meta property="og:site_name" content="Canon&#39;s Blog">
 <meta property="og:description" content="背景当Logstash要处理的多个input类型时, 最常见的两种解决方案(不推荐):  通过条件判断解决问题  通过多实例解决问题   负面影响:  条件判断  条件地狱。已知的在一个管道中实现多个独立流的方法是使用条件判断。主要方式是在输入部分通过标签标记事件，然后在过滤器中和输出阶段创建条件分支，对贴有不同标签的事件，应用不同的插件集。这种方式虽然可以解决问题，但在实际的使用中却非常的痛苦！">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2019-12-30T07:18:58.183Z">
+<meta property="og:updated_time" content="2019-12-30T07:20:23.157Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Logstash Multiple Pipelines">
 <meta name="twitter:description" content="背景当Logstash要处理的多个input类型时, 最常见的两种解决方案(不推荐):  通过条件判断解决问题  通过多实例解决问题   负面影响:  条件判断  条件地狱。已知的在一个管道中实现多个独立流的方法是使用条件判断。主要方式是在输入部分通过标签标记事件，然后在过滤器中和输出阶段创建条件分支，对贴有不同标签的事件，应用不同的插件集。这种方式虽然可以解决问题，但在实际的使用中却非常的痛苦！">
@@ -297,7 +297,7 @@
                 
               
 
-              <time title="创建时间：2019-12-30 15:17:17 / 修改时间：15:18:58" itemprop="dateCreated datePublished" datetime="2019-12-30T15:17:17+08:00">2019-12-30</time>
+              <time title="创建时间：2019-12-30 15:17:17 / 修改时间：15:20:23" itemprop="dateCreated datePublished" datetime="2019-12-30T15:17:17+08:00">2019-12-30</time>
             </span>
           
             
@@ -367,7 +367,7 @@
 <p><code>/etc/supervisord.d/logstash.ini</code></p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">[program:logstash]</span><br><span class="line"><span class="built_in">command</span>=/usr/share/logstash/bin/logstash --path.data /lingtian/data/logstash/</span><br><span class="line"><span class="comment">#user=logstash</span></span><br><span class="line">numprocs=1</span><br><span class="line">autostart=<span class="literal">true</span></span><br><span class="line">autorestart=<span class="literal">true</span></span><br><span class="line">startsecs=1</span><br><span class="line">startretries=3</span><br><span class="line">exitcodes=0,2</span><br><span class="line">stopsignal=INT</span><br><span class="line">redirect_stderr=<span class="literal">true</span></span><br><span class="line">stdout_logfile_maxbytes=1MB</span><br><span class="line">stdout_logfile_backups=5</span><br><span class="line">stdout_capture_maxbytes=1MB</span><br><span class="line">stdout_logfile=/lingtian/logs/logstash/logstash.log</span><br></pre></td></tr></table></figure>
 
-<h5 id="启停"><a href="#启停" class="headerlink" title="启停"></a>启停</h5><p>可通过使用参数, <code>--config.reload.automatic</code> or <code>-r</code> 在配置文件发生更改后自动检测并重新加载配置。</p>
+<h5 id="加载配置文件"><a href="#加载配置文件" class="headerlink" title="加载配置文件"></a>加载配置文件</h5><p>可通过使用参数, <code>--config.reload.automatic</code> or <code>-r</code> 在配置文件发生更改后自动检测并重新加载配置。</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ bin/logstash -f apache.config --config.reload.automatic</span><br></pre></td></tr></table></figure>
 
 <p>默认3秒检查配置文件, 可以通过使用参数, <code>--config.reload.interval</code>修改秒数。</p>
@@ -494,7 +494,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#背景"><span class="nav-number">1.</span> <span class="nav-text">背景</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#解决方案"><span class="nav-number">2.</span> <span class="nav-text">解决方案</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#配置"><span class="nav-number">2.1.</span> <span class="nav-text">配置</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#启停"><span class="nav-number">2.2.</span> <span class="nav-text">启停</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#参考"><span class="nav-number">3.</span> <span class="nav-text">参考</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#背景"><span class="nav-number">1.</span> <span class="nav-text">背景</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#解决方案"><span class="nav-number">2.</span> <span class="nav-text">解决方案</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#配置"><span class="nav-number">2.1.</span> <span class="nav-text">配置</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#加载配置文件"><span class="nav-number">2.2.</span> <span class="nav-text">加载配置文件</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#参考"><span class="nav-number">3.</span> <span class="nav-text">参考</span></a></li></ol></div>
         
       </div>
       <!--/noindex-->
