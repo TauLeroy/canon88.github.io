@@ -1,6 +1,74 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title>Logstash Multiple Pipelines</title>
+    <url>/2019/12/30/Logstash-Multiple-Pipelines/</url>
+    <content><![CDATA[<h4 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h4><p>当Logstash要处理的多个input类型时, 最常见的两种解决方案(<strong>不推荐</strong>):</p>
+<ol>
+<li><p>通过条件判断解决问题</p>
+</li>
+<li><p>通过多实例解决问题</p>
+</li>
+</ol>
+<p><strong>负面影响:</strong></p>
+<ol>
+<li><p>条件判断</p>
+<ol>
+<li>条件地狱。已知的在一个管道中实现多个独立流的方法是使用条件判断。主要方式是在输入部分通过标签标记事件，然后在过滤器中和输出阶段创建条件分支，对贴有不同标签的事件，应用不同的插件集。这种方式虽然可以解决问题，但在实际的使用中却非常的痛苦！下面是一个简单的 demo 片段：</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">input &#123;</span><br><span class="line">    beats &#123; </span><br><span class="line">        port =&gt; 3444  </span><br><span class="line">        tag =&gt; apache </span><br><span class="line">    &#125;</span><br><span class="line">    tcp &#123; </span><br><span class="line">        port =&gt; 4222</span><br><span class="line">        tag =&gt; firewall</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">filter &#123;</span><br><span class="line">    <span class="keyword">if</span> <span class="string">"apache"</span> <span class="keyword">in</span> [tags] &#123;</span><br><span class="line">        dissect &#123; ... &#125;</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> <span class="string">"firewall"</span> <span class="keyword">in</span> [tags] &#123;</span><br><span class="line">        grok &#123; ... &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">output &#123;</span><br><span class="line">    <span class="keyword">if</span> <span class="string">"apache"</span> <span class="keyword">in</span> [tags] &#123;</span><br><span class="line">        elasticsearch &#123; ... &#125;</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> <span class="string">"firewall"</span> <span class="keyword">in</span> [tags] &#123;</span><br><span class="line">        tcp &#123; ... &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+</li>
+</ol>
+<ol>
+<li>缺乏拥塞管理。Logstash在所有事件和完成所有输出之前不会移动到下一批事件。这意味着，对于上面的管道，如果 TCP 套接字目标不可达，Logstash将不会处理其他批次的事件，这也就意味着 Elasticsearch 将不会接收事件，并且会对 TCP 输入和 Beats 输入施加反压力。</li>
+<li>不同的数据流需要以不同的方式处理。如果 TCP - &gt; Grok - &gt; TCP 数据流处理大量的小数据，而 Beats -&gt; Dissect -&gt; ES 数据流中的单个数据体积大但是数量少。那么前一个数据流希望有多个 worker 并行并其每一批次处理更多事件，第二个数据流则期望使用少量的 worker 和每批次处理少量的事件。使用单个管道，无法为单个数据流指定独立的管道配置。</li>
+</ol>
+<ol start="2">
+<li>多实例<ol>
+<li>需要管理多个实例(通过 init 系统管理多个后台服务)</li>
+<li>每个 Logstash 的实例也意味着一个独立的 JVM</li>
+<li>需要监视每个 Logstash 实例</li>
+</ol>
+</li>
+</ol>
+<h4 id="解决方案"><a href="#解决方案" class="headerlink" title="解决方案"></a>解决方案</h4><p>​        通过配置多管道(Multiple Pipelines), 解决以上的所有问题。</p>
+<h5 id="配置"><a href="#配置" class="headerlink" title="配置"></a>配置</h5><p><code>/usr/share/logstash/config/pipelines.yml</code></p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># This file is where you define your pipelines. You can define multiple.</span></span><br><span class="line"><span class="comment"># For more information on multiple pipelines, see the documentation:</span></span><br><span class="line"><span class="comment">#   https://www.elastic.co/guide/en/logstash/current/multiple-pipelines.html</span></span><br><span class="line"></span><br><span class="line">- pipeline.id: dsiem</span><br><span class="line">  path.config: <span class="string">"/etc/logstash/conf.d_siem/*.conf"</span></span><br><span class="line">  pipeline.workers: 16</span><br><span class="line">  queue.type: persisted</span><br><span class="line">  queue.max_bytes: 300gb</span><br><span class="line"></span><br><span class="line">- pipeline.id: cloudflare</span><br><span class="line">  path.config: <span class="string">"/etc/logstash/conf.d_cf/*.conf"</span></span><br><span class="line">  pipeline.workers: 8</span><br><span class="line">  queue.type: persisted</span><br><span class="line">  queue.max_bytes: 100gb</span><br><span class="line"></span><br><span class="line">- pipeline.id: ti</span><br><span class="line">  path.config: <span class="string">"/etc/logstash/conf.d_ti/*.conf"</span></span><br><span class="line">  pipeline.workers: 8</span><br><span class="line">  queue.type: persisted</span><br><span class="line">  queue.max_bytes: 50gb</span><br></pre></td></tr></table></figure>
+
+<p><code>/etc/supervisord.d/logstash.ini</code></p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">[program:logstash]</span><br><span class="line"><span class="built_in">command</span>=/usr/share/logstash/bin/logstash --path.data /lingtian/data/logstash/</span><br><span class="line"><span class="comment">#user=logstash</span></span><br><span class="line">numprocs=1</span><br><span class="line">autostart=<span class="literal">true</span></span><br><span class="line">autorestart=<span class="literal">true</span></span><br><span class="line">startsecs=1</span><br><span class="line">startretries=3</span><br><span class="line">exitcodes=0,2</span><br><span class="line">stopsignal=INT</span><br><span class="line">redirect_stderr=<span class="literal">true</span></span><br><span class="line">stdout_logfile_maxbytes=1MB</span><br><span class="line">stdout_logfile_backups=5</span><br><span class="line">stdout_capture_maxbytes=1MB</span><br><span class="line">stdout_logfile=/lingtian/logs/logstash/logstash.log</span><br></pre></td></tr></table></figure>
+
+<h5 id="启停"><a href="#启停" class="headerlink" title="启停"></a>启停</h5><p>可通过使用参数, <code>--config.reload.automatic</code> or <code>-r</code> 在配置文件发生更改后自动检测并重新加载配置。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ bin/logstash -f apache.config --config.reload.automatic</span><br></pre></td></tr></table></figure>
+
+<p>默认3秒检查配置文件, 可以通过使用参数, <code>--config.reload.interval</code>修改秒数。</p>
+<p>如果Logstash已经在没有启用自动重载的情况下运行，则可以通过向运行Logstash的进程发送SIGHUP（信号挂起）来强制Logstash重载配置文件并重新启动管道。例如：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ <span class="built_in">kill</span> -SIGHUP <span class="variable">$logstash_pid</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h4><ul>
+<li><p><strong><a href="https://github.com/elastic/logstash/blob/master/config/pipelines.yml" target="_blank" rel="noopener">Pipelines 参数</a></strong></p>
+</li>
+<li><p><strong><a href="https://www.elastic.co/guide/en/logstash/6.7/multiple-pipelines.html" target="_blank" rel="noopener">Multiple Pipelines</a></strong></p>
+</li>
+<li><p><strong><a href="https://www.elastic.co/cn/blog/logstash-multiple-pipelines" target="_blank" rel="noopener">Introducing Multiple Pipelines in Logstash - 原文</a></strong></p>
+</li>
+<li><p><strong><a href="https://www.cnblogs.com/sparkdev/p/11073980.html" target="_blank" rel="noopener">Introducing Multiple Pipelines in Logstash - 中文</a></strong></p>
+</li>
+<li><p><strong><a href="https://www.elastic.co/guide/en/logstash/current/reloading-config.html" target="_blank" rel="noopener">Reloading the Config Fileedit </a></strong></p>
+</li>
+</ul>
+]]></content>
+      <categories>
+        <category>ELK</category>
+      </categories>
+      <tags>
+        <tag>Logstash</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>Scrapy 多个item对应一个pipeline</title>
     <url>/2019/12/30/Scrapy-%E5%A4%9A%E4%B8%AAitem%E5%AF%B9%E5%BA%94%E4%B8%80%E4%B8%AApipeline/</url>
     <content><![CDATA[<h4 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h4><p>​        在利用<strong>Scrapy</strong>编写爬虫时,经常会遇到同一个爬虫中包含多个item classes, 并且需要在同一个<code>pipelines.py</code>中根据不同的item classes进行逻辑的处理。</p>
@@ -19,17 +87,6 @@
       <tags>
         <tag>Scrapy</tag>
       </tags>
-  </entry>
-  <entry>
-    <title>Logstash Multiple Pipelines</title>
-    <url>/2019/12/27/Logstash-Multiple-Pipelines/</url>
-    <content><![CDATA[<p>piplines</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">[program:logstash]</span><br><span class="line"><span class="built_in">command</span>=/usr/share/logstash/bin/logstash -f /etc/logstash/conf.d_dsiem/ --path.data /lingtian/data/logstash/</span><br><span class="line"><span class="comment">#user=logstash</span></span><br><span class="line">numprocs=1</span><br><span class="line">autostart=<span class="literal">true</span></span><br><span class="line">autorestart=<span class="literal">true</span></span><br><span class="line">startsecs=1</span><br><span class="line">startretries=3</span><br><span class="line">exitcodes=0,2</span><br><span class="line">stopsignal=INT</span><br><span class="line">redirect_stderr=<span class="literal">true</span></span><br><span class="line">stdout_logfile_maxbytes=1MB</span><br><span class="line">stdout_logfile_backups=5</span><br><span class="line">stdout_capture_maxbytes=1MB</span><br><span class="line">stdout_logfile=/lingtian/logs/logstash/logstash.log</span><br></pre></td></tr></table></figure>
-
-<h4 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h4><ul>
-<li><strong><a href="https://github.com/elastic/logstash/blob/master/config/pipelines.yml" target="_blank" rel="noopener">pipelines.yml</a></strong></li>
-</ul>
-]]></content>
   </entry>
   <entry>
     <title>Redis Key 过期事件订阅</title>

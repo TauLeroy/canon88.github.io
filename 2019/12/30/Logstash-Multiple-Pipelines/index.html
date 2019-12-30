@@ -55,19 +55,19 @@
   };
 </script>
 
-  <meta name="description" content="需求​        在自建企业内部威胁情报的过程中, 需要通过Redis统一管理过期时间的Key。因此需要对过期的Key进行实时监听, 并进行回调处理。 思路​        在 Redis 的 2.8.0 版本之后，其推出了一个新的特性——键空间消息（Redis Keyspace Notifications），它配合 2.0.0 版本之后的 SUBSCRIBE 就能完成这个定时任务的操作了。">
-<meta name="keywords" content="Redis">
+  <meta name="description" content="背景当Logstash要处理的多个input类型时, 最常见的两种解决方案(不推荐):  通过条件判断解决问题  通过多实例解决问题   负面影响:  条件判断  条件地狱。已知的在一个管道中实现多个独立流的方法是使用条件判断。主要方式是在输入部分通过标签标记事件，然后在过滤器中和输出阶段创建条件分支，对贴有不同标签的事件，应用不同的插件集。这种方式虽然可以解决问题，但在实际的使用中却非常的痛苦！">
+<meta name="keywords" content="Logstash">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Redis Key 过期事件订阅">
-<meta property="og:url" content="http://yoursite.com/2019/12/24/Redis-Key-过期事件订阅/index.html">
+<meta property="og:title" content="Logstash Multiple Pipelines">
+<meta property="og:url" content="http://yoursite.com/2019/12/30/Logstash-Multiple-Pipelines/index.html">
 <meta property="og:site_name" content="Canon&#39;s Blog">
-<meta property="og:description" content="需求​        在自建企业内部威胁情报的过程中, 需要通过Redis统一管理过期时间的Key。因此需要对过期的Key进行实时监听, 并进行回调处理。 思路​        在 Redis 的 2.8.0 版本之后，其推出了一个新的特性——键空间消息（Redis Keyspace Notifications），它配合 2.0.0 版本之后的 SUBSCRIBE 就能完成这个定时任务的操作了。">
+<meta property="og:description" content="背景当Logstash要处理的多个input类型时, 最常见的两种解决方案(不推荐):  通过条件判断解决问题  通过多实例解决问题   负面影响:  条件判断  条件地狱。已知的在一个管道中实现多个独立流的方法是使用条件判断。主要方式是在输入部分通过标签标记事件，然后在过滤器中和输出阶段创建条件分支，对贴有不同标签的事件，应用不同的插件集。这种方式虽然可以解决问题，但在实际的使用中却非常的痛苦！">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2019-12-27T04:15:21.210Z">
+<meta property="og:updated_time" content="2019-12-30T07:18:58.183Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Redis Key 过期事件订阅">
-<meta name="twitter:description" content="需求​        在自建企业内部威胁情报的过程中, 需要通过Redis统一管理过期时间的Key。因此需要对过期的Key进行实时监听, 并进行回调处理。 思路​        在 Redis 的 2.8.0 版本之后，其推出了一个新的特性——键空间消息（Redis Keyspace Notifications），它配合 2.0.0 版本之后的 SUBSCRIBE 就能完成这个定时任务的操作了。">
-  <link rel="canonical" href="http://yoursite.com/2019/12/24/Redis-Key-过期事件订阅/">
+<meta name="twitter:title" content="Logstash Multiple Pipelines">
+<meta name="twitter:description" content="背景当Logstash要处理的多个input类型时, 最常见的两种解决方案(不推荐):  通过条件判断解决问题  通过多实例解决问题   负面影响:  条件判断  条件地狱。已知的在一个管道中实现多个独立流的方法是使用条件判断。主要方式是在输入部分通过标签标记事件，然后在过滤器中和输出阶段创建条件分支，对贴有不同标签的事件，应用不同的插件集。这种方式虽然可以解决问题，但在实际的使用中却非常的痛苦！">
+  <link rel="canonical" href="http://yoursite.com/2019/12/30/Logstash-Multiple-Pipelines/">
 
 
 <script id="page-configurations">
@@ -94,7 +94,7 @@
   padding: 1px 4px;
 }
 </style>
-  <title>Redis Key 过期事件订阅 | Canon's Blog</title>
+  <title>Logstash Multiple Pipelines | Canon's Blog</title>
   
 
 
@@ -269,7 +269,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/12/24/Redis-Key-过期事件订阅/">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/12/30/Logstash-Multiple-Pipelines/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="Canon">
@@ -281,7 +281,7 @@
       <meta itemprop="name" content="Canon's Blog">
     </span>
       <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">Redis Key 过期事件订阅
+        <h1 class="post-title" itemprop="name headline">Logstash Multiple Pipelines
 
           
         </h1>
@@ -297,19 +297,11 @@
                 
               
 
-              <time title="创建时间：2019-12-24 23:49:55" itemprop="dateCreated datePublished" datetime="2019-12-24T23:49:55+08:00">2019-12-24</time>
+              <time title="创建时间：2019-12-30 15:17:17 / 修改时间：15:18:58" itemprop="dateCreated datePublished" datetime="2019-12-30T15:17:17+08:00">2019-12-30</time>
             </span>
           
             
 
-            
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2019-12-27 12:15:21" itemprop="dateModified" datetime="2019-12-27T12:15:21+08:00">2019-12-27</time>
-              </span>
             
           
             <span class="post-meta-item">
@@ -318,7 +310,7 @@
               </span>
               <span class="post-meta-item-text">分类于</span>
               
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Redis/" itemprop="url" rel="index"><span itemprop="name">Redis</span></a></span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/ELK/" itemprop="url" rel="index"><span itemprop="name">ELK</span></a></span>
 
                 
                 
@@ -337,31 +329,61 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <h3 id="需求"><a href="#需求" class="headerlink" title="需求"></a>需求</h3><p>​        在自建企业内部威胁情报的过程中, 需要通过<strong>Redis</strong>统一管理过期时间的<strong>Key</strong>。因此需要对过期的<strong>Key</strong>进行实时监听, 并进行回调处理。</p>
-<h3 id="思路"><a href="#思路" class="headerlink" title="思路"></a>思路</h3><p>​        在 <strong>Redis</strong> 的 <strong>2.8.0</strong> 版本之后，其推出了一个新的特性——键空间消息（Redis Keyspace Notifications），它配合 2.0.0 版本之后的 SUBSCRIBE 就能完成这个定时任务的操作了。</p>
-<p><strong>Redis 的键空间通知支持 订阅指定 Key 的所有事件 与 订阅指定事件 两种方式。</strong></p>
-<blockquote>
-<p>Keyspace notifications are implemented sending two distinct type of events for every operation affecting the Redis data space. For instance a DEL operation targeting the key named mykey in database 0 will trigger the delivering of two messages, exactly equivalent to the following two PUBLISH commands:</p>
-</blockquote>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">PUBLISH __keyspace@0__:mykey del</span><br><span class="line">PUBLISH __keyevent@0__:del mykey</span><br></pre></td></tr></table></figure>
-
-<p><strong>通过 Redis 的键空间通知（keyspace notification）可以做到：将IoC数据写入Redis，设置过期时间10分钟，利用 Redis 键过期回调提醒，如果未被消费，则进行处理。</strong></p>
-<h3 id="实现"><a href="#实现" class="headerlink" title="实现"></a>实现</h3><h4 id="1-修改-redis-conf-开启redis-key过期提醒"><a href="#1-修改-redis-conf-开启redis-key过期提醒" class="headerlink" title="1. 修改 redis.conf 开启redis key过期提醒"></a>1. 修改 redis.conf 开启redis key过期提醒</h4><blockquote>
-<p>By default keyspace events notifications are disabled because while not very sensible the feature uses some CPU power. Notifications are enabled using the notify-keyspace-events of redis.conf or via the CONFIG SET.</p>
-</blockquote>
-<p>由于键空间通知比较耗CPU, 所以 Redis默认是关闭键空间事件通知的， 需要手动开启 <code>notify-keyspace-events</code>后才启作用。</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">K：keyspace事件，事件以__keyspace@&lt;db&gt;__为前缀进行发布；        </span><br><span class="line">E：keyevent事件，事件以__keyevent@&lt;db&gt;__为前缀进行发布；        </span><br><span class="line">g：一般性的，非特定类型的命令，比如del，expire，rename等；       </span><br><span class="line">$：String 特定命令；        </span><br><span class="line">l：List 特定命令；        </span><br><span class="line">s：Set 特定命令；        </span><br><span class="line">h：Hash 特定命令；        </span><br><span class="line">z：Sorted 特定命令；        </span><br><span class="line">x：过期事件，当某个键过期并删除时会产生该事件；        </span><br><span class="line">e：驱逐事件，当某个键因maxmemore策略而被删除时，产生该事件；        </span><br><span class="line">A：g<span class="variable">$lshzxe</span>的别名，因此”AKE”意味着所有事件。</span><br></pre></td></tr></table></figure>
-
-<p><strong><code>notify-keyspace-events Ex</code> 表示开启键过期事件提醒</strong></p>
-<p><strong>redis.conf</strong></p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># RDB Config</span></span><br><span class="line">databases 16</span><br><span class="line">save 900 1</span><br><span class="line">save 300 10</span><br><span class="line">save 60 10000</span><br><span class="line">stop-writes-on-bgsave-error yes</span><br><span class="line">rdbcompression yes</span><br><span class="line">rdbchecksum no</span><br><span class="line">dir ./</span><br><span class="line"><span class="comment"># AOF Config</span></span><br><span class="line">appendonly yes</span><br><span class="line">appendfilename <span class="string">"appendonly.aof"</span></span><br><span class="line">appendfsync everysec</span><br><span class="line">no-appendfsync-on-rewrite no</span><br><span class="line">auto-aof-rewrite-percentage 100</span><br><span class="line">auto-aof-rewrite-min-size 64mb</span><br><span class="line"><span class="comment"># set Password</span></span><br><span class="line">requirepass %&#123;mypassword&#125;</span><br><span class="line"><span class="comment"># set notify-keyspace-events</span></span><br><span class="line">notify-keyspace-events Ex</span><br></pre></td></tr></table></figure>
-
-<h4 id="2-RedisHelper"><a href="#2-RedisHelper" class="headerlink" title="2. RedisHelper"></a>2. RedisHelper</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="comment"># Author: Canon</span></span><br><span class="line"><span class="comment"># Date: 2019-12-27</span></span><br><span class="line"><span class="comment"># Version: 0.2</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> redis</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">RedisHelper</span><span class="params">()</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self)</span>:</span></span><br><span class="line">        <span class="comment"># 连接Redis</span></span><br><span class="line">        self.__conn = redis.Redis(host=<span class="string">'127.0.0.1'</span>, port=<span class="number">6379</span>, password=<span class="string">'mypassword'</span>, db=<span class="number">0</span>)</span><br><span class="line">        <span class="comment"># 定义keyevent, 此处0为indexdb</span></span><br><span class="line">        self.keyevent = <span class="string">'__keyevent@0__:expired'</span></span><br><span class="line">        </span><br><span class="line">    <span class="comment"># 发布方法</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">publish</span><span class="params">(self, key, msg)</span>:</span></span><br><span class="line">        ttl = <span class="number">10</span></span><br><span class="line">        self.__conn.setex(key, msg, ttl)</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">True</span></span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 订阅方法</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">subscribe</span><span class="params">(self)</span>:</span></span><br><span class="line">        sub = self.__conn.pubsub()</span><br><span class="line">        sub.subscribe(self.keyevent)</span><br><span class="line">        <span class="keyword">for</span> msg <span class="keyword">in</span> sub.listen():</span><br><span class="line">            <span class="keyword">if</span> msg[<span class="string">'type'</span>] == <span class="string">'message'</span>:</span><br><span class="line">                ex_key = msg[<span class="string">'data'</span>].decode()</span><br><span class="line">                print(ex_key)</span><br></pre></td></tr></table></figure>
-
-<h3 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h3><ul>
-<li><p><strong><a href="https://crazyfzw.github.io/2019/03/26/redis-keyspace-notifications/" target="_blank" rel="noopener">订阅 Redis 的 key 过期事件实现动态定时任务</a></strong></p>
+        <h4 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h4><p>当Logstash要处理的多个input类型时, 最常见的两种解决方案(<strong>不推荐</strong>):</p>
+<ol>
+<li><p>通过条件判断解决问题</p>
 </li>
-<li><p><strong><a href="https://segmentfault.com/a/1190000016898228" target="_blank" rel="noopener">python开发-实现redis中的发布订阅功能</a></strong></p>
+<li><p>通过多实例解决问题</p>
+</li>
+</ol>
+<p><strong>负面影响:</strong></p>
+<ol>
+<li><p>条件判断</p>
+<ol>
+<li>条件地狱。已知的在一个管道中实现多个独立流的方法是使用条件判断。主要方式是在输入部分通过标签标记事件，然后在过滤器中和输出阶段创建条件分支，对贴有不同标签的事件，应用不同的插件集。这种方式虽然可以解决问题，但在实际的使用中却非常的痛苦！下面是一个简单的 demo 片段：</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">input &#123;</span><br><span class="line">    beats &#123; </span><br><span class="line">        port =&gt; 3444  </span><br><span class="line">        tag =&gt; apache </span><br><span class="line">    &#125;</span><br><span class="line">    tcp &#123; </span><br><span class="line">        port =&gt; 4222</span><br><span class="line">        tag =&gt; firewall</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">filter &#123;</span><br><span class="line">    <span class="keyword">if</span> <span class="string">"apache"</span> <span class="keyword">in</span> [tags] &#123;</span><br><span class="line">        dissect &#123; ... &#125;</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> <span class="string">"firewall"</span> <span class="keyword">in</span> [tags] &#123;</span><br><span class="line">        grok &#123; ... &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">output &#123;</span><br><span class="line">    <span class="keyword">if</span> <span class="string">"apache"</span> <span class="keyword">in</span> [tags] &#123;</span><br><span class="line">        elasticsearch &#123; ... &#125;</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> <span class="string">"firewall"</span> <span class="keyword">in</span> [tags] &#123;</span><br><span class="line">        tcp &#123; ... &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+</li>
+</ol>
+<ol>
+<li>缺乏拥塞管理。Logstash在所有事件和完成所有输出之前不会移动到下一批事件。这意味着，对于上面的管道，如果 TCP 套接字目标不可达，Logstash将不会处理其他批次的事件，这也就意味着 Elasticsearch 将不会接收事件，并且会对 TCP 输入和 Beats 输入施加反压力。</li>
+<li>不同的数据流需要以不同的方式处理。如果 TCP - &gt; Grok - &gt; TCP 数据流处理大量的小数据，而 Beats -&gt; Dissect -&gt; ES 数据流中的单个数据体积大但是数量少。那么前一个数据流希望有多个 worker 并行并其每一批次处理更多事件，第二个数据流则期望使用少量的 worker 和每批次处理少量的事件。使用单个管道，无法为单个数据流指定独立的管道配置。</li>
+</ol>
+<ol start="2">
+<li>多实例<ol>
+<li>需要管理多个实例(通过 init 系统管理多个后台服务)</li>
+<li>每个 Logstash 的实例也意味着一个独立的 JVM</li>
+<li>需要监视每个 Logstash 实例</li>
+</ol>
+</li>
+</ol>
+<h4 id="解决方案"><a href="#解决方案" class="headerlink" title="解决方案"></a>解决方案</h4><p>​        通过配置多管道(Multiple Pipelines), 解决以上的所有问题。</p>
+<h5 id="配置"><a href="#配置" class="headerlink" title="配置"></a>配置</h5><p><code>/usr/share/logstash/config/pipelines.yml</code></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># This file is where you define your pipelines. You can define multiple.</span></span><br><span class="line"><span class="comment"># For more information on multiple pipelines, see the documentation:</span></span><br><span class="line"><span class="comment">#   https://www.elastic.co/guide/en/logstash/current/multiple-pipelines.html</span></span><br><span class="line"></span><br><span class="line">- pipeline.id: dsiem</span><br><span class="line">  path.config: <span class="string">"/etc/logstash/conf.d_siem/*.conf"</span></span><br><span class="line">  pipeline.workers: 16</span><br><span class="line">  queue.type: persisted</span><br><span class="line">  queue.max_bytes: 300gb</span><br><span class="line"></span><br><span class="line">- pipeline.id: cloudflare</span><br><span class="line">  path.config: <span class="string">"/etc/logstash/conf.d_cf/*.conf"</span></span><br><span class="line">  pipeline.workers: 8</span><br><span class="line">  queue.type: persisted</span><br><span class="line">  queue.max_bytes: 100gb</span><br><span class="line"></span><br><span class="line">- pipeline.id: ti</span><br><span class="line">  path.config: <span class="string">"/etc/logstash/conf.d_ti/*.conf"</span></span><br><span class="line">  pipeline.workers: 8</span><br><span class="line">  queue.type: persisted</span><br><span class="line">  queue.max_bytes: 50gb</span><br></pre></td></tr></table></figure>
+
+<p><code>/etc/supervisord.d/logstash.ini</code></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">[program:logstash]</span><br><span class="line"><span class="built_in">command</span>=/usr/share/logstash/bin/logstash --path.data /lingtian/data/logstash/</span><br><span class="line"><span class="comment">#user=logstash</span></span><br><span class="line">numprocs=1</span><br><span class="line">autostart=<span class="literal">true</span></span><br><span class="line">autorestart=<span class="literal">true</span></span><br><span class="line">startsecs=1</span><br><span class="line">startretries=3</span><br><span class="line">exitcodes=0,2</span><br><span class="line">stopsignal=INT</span><br><span class="line">redirect_stderr=<span class="literal">true</span></span><br><span class="line">stdout_logfile_maxbytes=1MB</span><br><span class="line">stdout_logfile_backups=5</span><br><span class="line">stdout_capture_maxbytes=1MB</span><br><span class="line">stdout_logfile=/lingtian/logs/logstash/logstash.log</span><br></pre></td></tr></table></figure>
+
+<h5 id="启停"><a href="#启停" class="headerlink" title="启停"></a>启停</h5><p>可通过使用参数, <code>--config.reload.automatic</code> or <code>-r</code> 在配置文件发生更改后自动检测并重新加载配置。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ bin/logstash -f apache.config --config.reload.automatic</span><br></pre></td></tr></table></figure>
+
+<p>默认3秒检查配置文件, 可以通过使用参数, <code>--config.reload.interval</code>修改秒数。</p>
+<p>如果Logstash已经在没有启用自动重载的情况下运行，则可以通过向运行Logstash的进程发送SIGHUP（信号挂起）来强制Logstash重载配置文件并重新启动管道。例如：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ <span class="built_in">kill</span> -SIGHUP <span class="variable">$logstash_pid</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h4><ul>
+<li><p><strong><a href="https://github.com/elastic/logstash/blob/master/config/pipelines.yml" target="_blank" rel="noopener">Pipelines 参数</a></strong></p>
+</li>
+<li><p><strong><a href="https://www.elastic.co/guide/en/logstash/6.7/multiple-pipelines.html" target="_blank" rel="noopener">Multiple Pipelines</a></strong></p>
+</li>
+<li><p><strong><a href="https://www.elastic.co/cn/blog/logstash-multiple-pipelines" target="_blank" rel="noopener">Introducing Multiple Pipelines in Logstash - 原文</a></strong></p>
+</li>
+<li><p><strong><a href="https://www.cnblogs.com/sparkdev/p/11073980.html" target="_blank" rel="noopener">Introducing Multiple Pipelines in Logstash - 中文</a></strong></p>
+</li>
+<li><p><strong><a href="https://www.elastic.co/guide/en/logstash/current/reloading-config.html" target="_blank" rel="noopener">Reloading the Config Fileedit </a></strong></p>
 </li>
 </ul>
 
@@ -408,7 +430,7 @@
           
           <div class="post-tags">
             
-              <a href="/tags/Redis/" rel="tag"># Redis</a>
+              <a href="/tags/Logstash/" rel="tag"># Logstash</a>
             
           </div>
         
@@ -418,8 +440,8 @@
           <div class="post-nav">
             <div class="post-nav-next post-nav-item">
               
-                <a href="/2019/12/19/Scrapyd + Scrapyd-Client/" rel="next" title="Scrapyd + Scrapyd-Client">
-                  <i class="fa fa-chevron-left"></i> Scrapyd + Scrapyd-Client
+                <a href="/2019/12/30/Scrapy-多个item对应一个pipeline/" rel="next" title="Scrapy 多个item对应一个pipeline">
+                  <i class="fa fa-chevron-left"></i> Scrapy 多个item对应一个pipeline
                 </a>
               
             </div>
@@ -427,10 +449,6 @@
             <span class="post-nav-divider"></span>
 
             <div class="post-nav-prev post-nav-item">
-              
-                <a href="/2019/12/30/Scrapy-多个item对应一个pipeline/" rel="prev" title="Scrapy 多个item对应一个pipeline">
-                  Scrapy 多个item对应一个pipeline <i class="fa fa-chevron-right"></i>
-                </a>
               
             </div>
           </div>
@@ -476,7 +494,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#需求"><span class="nav-number">1.</span> <span class="nav-text">需求</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#思路"><span class="nav-number">2.</span> <span class="nav-text">思路</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#实现"><span class="nav-number">3.</span> <span class="nav-text">实现</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-修改-redis-conf-开启redis-key过期提醒"><span class="nav-number">3.1.</span> <span class="nav-text">1. 修改 redis.conf 开启redis key过期提醒</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-RedisHelper"><span class="nav-number">3.2.</span> <span class="nav-text">2. RedisHelper</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#参考"><span class="nav-number">4.</span> <span class="nav-text">参考</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#背景"><span class="nav-number">1.</span> <span class="nav-text">背景</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#解决方案"><span class="nav-number">2.</span> <span class="nav-text">解决方案</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#配置"><span class="nav-number">2.1.</span> <span class="nav-text">配置</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#启停"><span class="nav-number">2.2.</span> <span class="nav-text">启停</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#参考"><span class="nav-number">3.</span> <span class="nav-text">参考</span></a></li></ol></div>
         
       </div>
       <!--/noindex-->
