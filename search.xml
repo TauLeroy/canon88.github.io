@@ -1,6 +1,67 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title>Wazuh - 利用CDB list过滤私网IP地址</title>
+    <url>/2020/01/31/Wazuh-%E5%88%A9%E7%94%A8CDB-list%E8%BF%87%E6%BB%A4%E7%A7%81%E7%BD%91IP%E5%9C%B0%E5%9D%80/</url>
+    <content><![CDATA[<h4 id="需求"><a href="#需求" class="headerlink" title="需求"></a>需求</h4><p>​        目前平台接入了<strong>Suricata</strong>的告警规则, 由于镜像源的关系部分规则产生了<strong>‘误’</strong>告警, 因此需要针对这部分规则进行IP地址的过滤。</p>
+<h4 id="解决方法"><a href="#解决方法" class="headerlink" title="解决方法"></a>解决方法</h4><ol>
+<li>修改Suricata的规则, 如果你的<strong>‘误’</strong>告警量很大且为了性能考虑, 推荐直接修改Suricata的规则。</li>
+<li>由于我这边的Suricata告警都是利用Wazuh进行<strong>‘消费’</strong>的。因此, 我这边直接采用了<strong><a href="https://documentation.wazuh.com/3.10/user-manual/ruleset/cdb-list.html" target="_blank" rel="noopener">Wazuh CDB list</a></strong>这个功能进行指定IP地址的过滤。</li>
+</ol>
+<h4 id="步骤"><a href="#步骤" class="headerlink" title="步骤"></a>步骤</h4><h5 id="1-创建-CDB-list"><a href="#1-创建-CDB-list" class="headerlink" title="1. 创建 CDB list"></a>1. 创建 CDB list</h5><blockquote>
+<p>Each key must be unique and is terminated with a colon <code>:</code>.</p>
+<p>For IP addresses the dot notation is used for subnet matches:</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>key</th>
+<th>CIDR</th>
+<th>Possible matches</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>192.168.:</td>
+<td>192.168.0.0/16</td>
+<td>192.168.0.0 - 192.168.255.255</td>
+</tr>
+<tr>
+<td>172.16.19.:</td>
+<td>172.16.19.0/24</td>
+<td>172.16.19.0 - 172.16.19.255</td>
+</tr>
+<tr>
+<td>10.1.1.1:</td>
+<td>10.1.1.1/32</td>
+<td>10.1.1.1</td>
+</tr>
+</tbody></table>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ vim /var/ossec/etc/lists/private_ip</span><br><span class="line"></span><br><span class="line">10.168.:PrivateNet</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>Since Wazuh v3.11.3, CDB lists are built and loaded automatically when the analysis engine is started. Therefore, when adding or modifying CDB lists, it is no longer needed to run <code>ossec-makelists</code>, just restart the manager.</p>
+</blockquote>
+<p>从Wazuh v3.11.3开始，将在启动分析引擎时自动构建和加载CDB列表。因此，添加或修改CDB列表时，不再需要运行ossec-makelists，只需重新启动管理器即可。</p>
+<h5 id="2-在-ossec-conf-中添加-list"><a href="#2-在-ossec-conf-中添加-list" class="headerlink" title="2. 在 ossec.conf 中添加 list"></a>2. 在 ossec.conf 中添加 list</h5><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ vim /var/ossec/etc/ossec.conf</span><br><span class="line"></span><br><span class="line">&lt;ossec_config&gt;</span><br><span class="line">  &lt;ruleset&gt;</span><br><span class="line">    &lt;!-- User-defined CDB --&gt;</span><br><span class="line">    &lt;list&gt;etc/lists/private_ip&lt;/list&gt;</span><br><span class="line">  &lt;/ruleset&gt;</span><br><span class="line">&lt;/ossec_config&gt;</span><br></pre></td></tr></table></figure>
+
+<h5 id="3-重启进程"><a href="#3-重启进程" class="headerlink" title="3. 重启进程"></a>3. 重启进程</h5><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ systemctl restart wazuh-manager</span><br></pre></td></tr></table></figure>
+
+<h5 id="4-配置规则"><a href="#4-配置规则" class="headerlink" title="4. 配置规则"></a>4. 配置规则</h5><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">&lt;var name=<span class="string">"SAME_IP_TIME"</span>&gt;120&lt;/var&gt;</span><br><span class="line">&lt;var name=<span class="string">"SAME_IP_IGORE"</span>&gt;300&lt;/var&gt;</span><br><span class="line"></span><br><span class="line">&lt;group name=<span class="string">"local,suricata,ids,"</span>&gt;</span><br><span class="line"></span><br><span class="line">    &lt;rule id=<span class="string">"102018"</span> level=<span class="string">"8"</span> frequency=<span class="string">"5"</span> timeframe=<span class="string">"<span class="variable">$SAME_IP_TIME</span>"</span> ignore=<span class="string">"<span class="variable">$SAME_IP_IGORE</span>"</span>&gt;</span><br><span class="line">      &lt;if_matched_sid&gt;86601&lt;/if_matched_sid&gt;</span><br><span class="line">      &lt;field name=<span class="string">"alert.signature_id"</span>&gt;2013057&lt;/field&gt;</span><br><span class="line">      &lt;list field=<span class="string">"src_ip"</span> lookup=<span class="string">"not_address_match_key"</span>&gt;etc/lists/private_ip&lt;/list&gt;</span><br><span class="line">      &lt;description&gt;Wazuh Rules - Same ip of attack occurred 5 <span class="built_in">times</span> within <span class="variable">$SAME_IP_TIME</span> seconds. $(src_ip) -&gt; $(alert.signature) -&gt; $(alert.signature_id).&lt;/description&gt;</span><br><span class="line">      &lt;options&gt;no_full_log&lt;/options&gt;</span><br><span class="line">    &lt;/rule&gt;</span><br><span class="line"></span><br><span class="line">&lt;/group&gt;</span><br></pre></td></tr></table></figure>
+
+<h5 id="5-测试规则"><a href="#5-测试规则" class="headerlink" title="5. 测试规则"></a>5. 测试规则</h5><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ /var/ossec/bin/ossec-logtest</span><br></pre></td></tr></table></figure>
+
+<h4 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h4><ul>
+<li><strong><a href="https://documentation.wazuh.com/3.11/user-manual/ruleset/cdb-list.html?highlight=match_key" target="_blank" rel="noopener">Using CDB lists</a></strong></li>
+</ul>
+]]></content>
+      <categories>
+        <category>HIDS</category>
+      </categories>
+      <tags>
+        <tag>Wazuh</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>Logstash Event API</title>
     <url>/2019/12/30/Logstash-Event-API/</url>
     <content><![CDATA[<h4 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h4><p>​        由于项目需要, 用到了<code>Ruby</code>对Logstash进行一些定制化的配置。翻遍了整个Logstash的官方文档, 对于Ruby API的介绍就写了两个方法。<code>get</code> 与 <code>set</code> 也是醉了😂, 幸好谷歌一下…</p>
