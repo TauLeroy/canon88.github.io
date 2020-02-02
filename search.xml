@@ -42,8 +42,10 @@
 <p>Since Wazuh v3.11.3, CDB lists are built and loaded automatically when the analysis engine is started. Therefore, when adding or modifying CDB lists, it is no longer needed to run <code>ossec-makelists</code>, just restart the manager.</p>
 </blockquote>
 <p>从Wazuh v3.11.3开始，将在启动分析引擎时自动构建和加载CDB列表。因此，添加或修改CDB列表时，不再需要运行ossec-makelists，只需重新启动管理器即可。</p>
-<p><strong><em>3.11.3 之前版本需要执行</em></strong></p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ $ /var/ossec/bin/ossec-makelists</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p><strong>3.11.3 之前版本需要执行</strong></p>
+</blockquote>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ /var/ossec/bin/ossec-makelists</span><br></pre></td></tr></table></figure>
 
 <h5 id="2-在-ossec-conf-中添加-list"><a href="#2-在-ossec-conf-中添加-list" class="headerlink" title="2. 在 ossec.conf 中添加 list"></a>2. 在 ossec.conf 中添加 list</h5><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ vim /var/ossec/etc/ossec.conf</span><br><span class="line"></span><br><span class="line">&lt;ossec_config&gt;</span><br><span class="line">  &lt;ruleset&gt;</span><br><span class="line">    &lt;!-- User-defined CDB --&gt;</span><br><span class="line">    &lt;list&gt;etc/lists/private_ip&lt;/list&gt;</span><br><span class="line">  &lt;/ruleset&gt;</span><br><span class="line">&lt;/ossec_config&gt;</span><br></pre></td></tr></table></figure>
 
