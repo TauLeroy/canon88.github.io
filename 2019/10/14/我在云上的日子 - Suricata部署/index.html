@@ -63,7 +63,7 @@
 <meta property="og:site_name" content="Canon&#39;s Blog">
 <meta property="og:description" content="安装PF_RING1. pf_ring  二进制安装  123456789# 18.04 LTS$ apt-get install software-properties-common wget$ add-apt-repository universe [ unless you have done it previously ]$ wget http://apt-stable.ntop.org/1">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2020-01-13T06:02:35.091Z">
+<meta property="og:updated_time" content="2020-02-25T14:34:14.359Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="我在&#39;云&#39;上的日子 - Suricata(部署)">
 <meta name="twitter:description" content="安装PF_RING1. pf_ring  二进制安装  123456789# 18.04 LTS$ apt-get install software-properties-common wget$ add-apt-repository universe [ unless you have done it previously ]$ wget http://apt-stable.ntop.org/1">
@@ -308,7 +308,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-01-13 14:02:35" itemprop="dateModified" datetime="2020-01-13T14:02:35+08:00">2020-01-13</time>
+                <time title="修改时间：2020-02-25 22:34:14" itemprop="dateModified" datetime="2020-02-25T22:34:14+08:00">2020-02-25</time>
               </span>
             
           
@@ -388,7 +388,7 @@
 <ul>
 <li><a href="http://www.manongjc.com/article/110977.html" target="_blank" rel="noopener"><strong>Hyperscan - 5.1.0 安装</strong></a></li>
 </ul>
-<h2 id="Suricata"><a href="#Suricata" class="headerlink" title="Suricata"></a><strong>Suricata</strong></h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 依赖</span></span><br><span class="line"><span class="meta">$</span><span class="bash"> apt-get install libpcre3 libpcre3-dbg libpcre3-dev build-essential libpcap-dev   \</span></span><br><span class="line">                libnet1-dev libyaml-0-2 libyaml-dev pkg-config zlib1g zlib1g-dev \</span><br><span class="line">                libcap-ng-dev libcap-ng0 make libmagic-dev libjansson-dev        \</span><br><span class="line">                libnss3-dev libgeoip-dev libhiredis-dev libevent-dev \</span><br><span class="line">                python-yaml rustc cargo libmaxminddb-dev liblzma-dev \</span><br><span class="line">                python3-distutils liblz4-dev</span><br><span class="line">                </span><br><span class="line"><span class="meta">#</span><span class="bash"> 编译</span></span><br><span class="line"><span class="meta">$</span><span class="bash"> mkdir suricata</span></span><br><span class="line"><span class="meta">$</span><span class="bash"> <span class="built_in">cd</span> suricata</span></span><br><span class="line"><span class="meta">$</span><span class="bash"> git <span class="built_in">clone</span> git://phalanx.openinfosecfoundation.org/oisf.git</span></span><br><span class="line"><span class="meta">$</span><span class="bash"> <span class="built_in">cd</span> oisf</span></span><br><span class="line"><span class="meta">$</span><span class="bash"> git <span class="built_in">clone</span> https://github.com/OISF/libhtp.git</span></span><br><span class="line"><span class="meta">$</span><span class="bash"> ./autogen.sh</span></span><br><span class="line"><span class="meta">$</span><span class="bash"> ./configure --prefix=/usr --sysconfdir=/etc --localstatedir=/var --<span class="built_in">enable</span>-pfring --with-libpfring-includes=/usr/<span class="built_in">local</span>/include --with-libpfring-libraries=/usr/<span class="built_in">local</span>/lib --<span class="built_in">enable</span>-geoip  --<span class="built_in">enable</span>-luajit --with-libluajit-includes=/usr/<span class="built_in">local</span>/include/luajit-2.0/ --with-libluajit-libraries=/usr/<span class="built_in">local</span>/lib/ --with-libhs-includes=/usr/<span class="built_in">local</span>/include/hs/ --with-libhs-libraries=/usr/<span class="built_in">local</span>/lib/</span></span><br><span class="line"><span class="meta">$</span><span class="bash"> make &amp;&amp; make install-full</span></span><br><span class="line"><span class="meta">$</span><span class="bash"> ldconfig</span></span><br></pre></td></tr></table></figure>
+<h2 id="Suricata"><a href="#Suricata" class="headerlink" title="Suricata"></a><strong>Suricata</strong></h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 依赖</span></span><br><span class="line"><span class="meta">$</span><span class="bash"> apt-get install libpcre3 libpcre3-dbg libpcre3-dev build-essential libpcap-dev   \</span></span><br><span class="line">                libnet1-dev libyaml-0-2 libyaml-dev pkg-config zlib1g zlib1g-dev \</span><br><span class="line">                libcap-ng-dev libcap-ng0 make libmagic-dev libjansson-dev        \</span><br><span class="line">                libnss3-dev libgeoip-dev libhiredis-dev libevent-dev \</span><br><span class="line">                python-yaml rustc cargo libmaxminddb-dev liblzma-dev \</span><br><span class="line">                python3-distutils liblz4-dev</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> Suricata 5.0.2</span></span><br><span class="line"><span class="meta">$</span><span class="bash"> wget https://www.openinfosecfoundation.org/download/suricata-5.0.2.tar.gz</span></span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> 编译</span></span><br><span class="line"><span class="meta">$</span><span class="bash"> mkdir suricata</span></span><br><span class="line"><span class="meta">$</span><span class="bash"> <span class="built_in">cd</span> suricata</span></span><br><span class="line"><span class="meta">$</span><span class="bash"> git <span class="built_in">clone</span> git://phalanx.openinfosecfoundation.org/oisf.git</span></span><br><span class="line"><span class="meta">$</span><span class="bash"> <span class="built_in">cd</span> oisf</span></span><br><span class="line"><span class="meta">$</span><span class="bash"> git <span class="built_in">clone</span> https://github.com/OISF/libhtp.git</span></span><br><span class="line"><span class="meta">$</span><span class="bash"> ./autogen.sh</span></span><br><span class="line"><span class="meta">$</span><span class="bash"> ./configure --prefix=/usr --sysconfdir=/etc --localstatedir=/var --<span class="built_in">enable</span>-pfring --with-libpfring-includes=/usr/<span class="built_in">local</span>/include --with-libpfring-libraries=/usr/<span class="built_in">local</span>/lib --<span class="built_in">enable</span>-geoip  --<span class="built_in">enable</span>-luajit --with-libluajit-includes=/usr/<span class="built_in">local</span>/include/luajit-2.0/ --with-libluajit-libraries=/usr/<span class="built_in">local</span>/lib/ --with-libhs-includes=/usr/<span class="built_in">local</span>/include/hs/ --with-libhs-libraries=/usr/<span class="built_in">local</span>/lib/</span></span><br><span class="line"><span class="meta">$</span><span class="bash"> make &amp;&amp; make install-full</span></span><br><span class="line"><span class="meta">$</span><span class="bash"> ldconfig</span></span><br></pre></td></tr></table></figure>
 
 <h1 id="验证"><a href="#验证" class="headerlink" title="验证"></a>验证</h1><p><strong>1. PF_RING</strong></p>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> suricata --build-info | grep PF_RING</span></span><br><span class="line">Features: PCAP_SET_BUFF PF_RING AF_PACKET HAVE_PACKET_FANOUT LIBCAP_NG LIBNET1.1 HAVE_HTP_URI_NORMALIZE_HOOK PCRE_JIT HAVE_NSS HAVE_LUA HAVE_LUAJIT HAVE_LIBJANSSON PROFILING TLS MAGIC RUST</span><br><span class="line">  PF_RING support:                         yes</span><br></pre></td></tr></table></figure>
@@ -538,7 +538,7 @@
         
           <a href="/archives/">
         
-          <span class="site-state-item-count">15</span>
+          <span class="site-state-item-count">16</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -551,7 +551,7 @@
             <a href="/categories/">
           
         
-        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-count">6</span>
         <span class="site-state-item-name">分类</span>
         </a>
       </div>
@@ -564,7 +564,7 @@
             <a href="/tags/">
           
         
-        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-count">7</span>
         <span class="site-state-item-name">标签</span>
         </a>
       </div>

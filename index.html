@@ -267,6 +267,199 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/02/25/Wazuh-通过Rsyslog将事件发送到Wazuh-Manager/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Canon">
+      <meta itemprop="description" content="一个热爱健身的安全分析师">
+      <meta itemprop="image" content="/images/avatar.jpeg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Canon's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+            
+            <a href="/2020/02/25/Wazuh-通过Rsyslog将事件发送到Wazuh-Manager/" class="post-title-link" itemprop="url">Wazuh - 如何对异构数据进行关联告警</a>
+          
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              
+                
+              
+
+              <time title="创建时间：2020-02-25 22:37:40" itemprop="dateCreated datePublished" datetime="2020-02-25T22:37:40+08:00">2020-02-25</time>
+            </span>
+          
+            
+
+            
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-03-04 14:59:00" itemprop="dateModified" datetime="2020-03-04T14:59:00+08:00">2020-03-04</time>
+              </span>
+            
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/HIDS、NIDS/" itemprop="url" rel="index"><span itemprop="name">HIDS、NIDS</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h4 id="需求"><a href="#需求" class="headerlink" title="需求"></a>需求</h4><p>​        由于攻防对抗的升级, 通过传统网络流量很难直接定位到攻击是否成功。因此, 我们需要结合主机端的日志进行研判。</p>
+<h5 id="场景"><a href="#场景" class="headerlink" title="场景"></a>场景</h5><p>​        在如今网络环境中, 脚本小子可以轻松的通过网络上的自动化工具发起WebShell扫描, 并且此类的安全事件通常是无效的。某天, Suricata检测到了WebShell上传的动作并产生了安全事件, 为提高告警的可靠性, 规避自动化工具扫描产生的告警泛洪。对于此类的告警, 我们需要结合Wazuh的syscheck功能将<strong>NIDS</strong> 与 <strong>HIDS</strong>事件进行关联, 形成高置信度的告警。</p>
+<h5 id="不足"><a href="#不足" class="headerlink" title="不足"></a>不足</h5><p>​        虽然Wazuh本身具备安全事件的关联能力, 但在传统的部署架构中, 通常是由<strong>agent</strong>将安全事件发送到<strong>manager</strong>, 通过<strong>manager</strong>进行安全事件的关联。由于缺少了对数据进行<strong>ETL</strong>, 使得Wazuh Manager很难对异构数据进行关联。</p>
+<h4 id="解决思路"><a href="#解决思路" class="headerlink" title="解决思路"></a>解决思路</h4><p>​        通过Logstash实现数据的标准化, 并将标准化后的数据通过<strong>Rsyslog</strong>的形式发送到Wazuh Manager, 从而进行异构数据的关联。</p>
+<h5 id="坑点"><a href="#坑点" class="headerlink" title="坑点"></a>坑点</h5><ol>
+<li>本次改造采用了<strong>syslog</strong>的形式将数据发送到Wazuh Manager端进行数据关联。由于<strong>syslog</strong> 默认采用了<strong>UDP</strong>协议进行数据传输, 当数据发送过大时将会导致<strong>数据截断</strong>的报错。针对此问题, 需改用<strong>TCP</strong>的形式进行数据发送规避此问题。</li>
+<li>Wazuh Manager 部分告警缺少”<strong>必要</strong>“关联字段的现象。如: 本次场景中<strong>syscheck</strong>告警事件, 默认不会携带<code>srcip</code>的字段, 对于此问题可以通过在Manager上编写一个预处理脚本来解决。</li>
+</ol>
+<h4 id="改造"><a href="#改造" class="headerlink" title="改造"></a>改造</h4><ol>
+<li><h5 id="改造之前"><a href="#改造之前" class="headerlink" title="改造之前:"></a>改造之前:</h5><p>Suricata (Wazuh agent) —(Agent: UDP 1514)—&gt; Wazuh Manager</p>
+</li>
+<li><h5 id="改造之后"><a href="#改造之后" class="headerlink" title="改造之后:"></a>改造之后:</h5><p>Suricata (Filebeat) -&gt; Logstash —( Rsyslog: UDP 514)—&gt; Wazuh Manager</p>
+<p>所有的标准化都由Logstash来进行, Filebeat只需要做’无脑’转发即可。</p>
+</li>
+</ol>
+<p><strong>目标架构图:</strong></p>
+<p><img src="/2020/02/25/Wazuh-通过Rsyslog将事件发送到Wazuh-Manager/image-20200303215020561.png" alt="image-20200303215020561"></p>
+<hr>
+<h5 id="Filebeat配置"><a href="#Filebeat配置" class="headerlink" title="Filebeat配置"></a>Filebeat配置</h5><ul>
+<li><h6 id="filebeat-yaml"><a href="#filebeat-yaml" class="headerlink" title="filebeat.yaml"></a>filebeat.yaml</h6></li>
+</ul>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#=========================== Filebeat inputs =============================</span></span><br><span class="line"><span class="string">filebeat.inputs:</span></span><br><span class="line"><span class="attr">- type:</span> <span class="string">log</span></span><br><span class="line"><span class="attr">  paths:</span></span><br><span class="line"><span class="bullet">    -</span> <span class="string">"/var/log/suricata/alert-*.json"</span></span><br><span class="line"><span class="attr">  fields_under_root:</span> <span class="literal">true</span></span><br><span class="line"><span class="attr">  fields:</span> <span class="string">&#123;</span> <span class="attr">application:</span> <span class="string">suricata</span> <span class="string">&#125;</span></span><br><span class="line">  <span class="string">json.keys_under_root:</span> <span class="literal">true</span></span><br><span class="line">  <span class="string">json.overwrite_keys:</span> <span class="literal">true</span></span><br><span class="line">  <span class="string">json.message_key:</span> <span class="string">log</span></span><br><span class="line"><span class="attr">  tail_files:</span> <span class="literal">false</span></span><br><span class="line"></span><br><span class="line"><span class="attr">  scan_frequency:</span> <span class="number">1</span><span class="string">s</span></span><br><span class="line"><span class="attr">  harvester_buffer_size:</span> <span class="number">104857600</span></span><br><span class="line"><span class="attr">  backoff:</span> <span class="number">1</span><span class="string">s</span></span><br><span class="line"><span class="attr">  max_backoff:</span> <span class="number">10</span><span class="string">s</span></span><br><span class="line"><span class="attr">  close_timeout:</span> <span class="number">30</span><span class="string">m</span></span><br><span class="line"><span class="attr">  close_inactive:</span> <span class="number">10</span><span class="string">m</span></span><br><span class="line"><span class="attr">  clean_inactive:</span> <span class="number">72</span><span class="string">h</span></span><br><span class="line"><span class="attr">  ignore_older:</span> <span class="number">70</span><span class="string">h</span></span><br><span class="line"><span class="attr">  registry_file:</span> <span class="string">/etc/filebeat/registry/wazuh/</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#================================ Processors ==================================</span></span><br><span class="line"><span class="attr">processors:</span></span><br><span class="line"><span class="attr">- drop_fields:</span></span><br><span class="line"><span class="attr">    fields:</span> <span class="string">["ecs.version",</span> <span class="string">"agent.ephemeral_id"</span><span class="string">,</span> <span class="string">"agent.version"</span><span class="string">,</span> <span class="string">"agent.type"</span><span class="string">,</span> <span class="string">"agent.id"</span><span class="string">,</span> <span class="string">"agent.ephemeral_id"</span><span class="string">,</span> <span class="string">"input.type"</span><span class="string">]</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#================================ Outputs =====================================</span></span><br><span class="line"><span class="string">output.logstash:</span></span><br><span class="line"><span class="attr">  hosts:</span> <span class="string">["192.168.199.97:5010"]</span></span><br><span class="line"><span class="attr">  loadbalance:</span> <span class="literal">true</span></span><br><span class="line"><span class="attr">  worker:</span> <span class="number">4</span></span><br><span class="line"><span class="attr">  compression_level:</span> <span class="number">3</span></span><br><span class="line"><span class="attr">  bulk_max_size:</span> <span class="number">4096</span></span><br></pre></td></tr></table></figure>
+
+<hr>
+<h5 id="Logstash配置"><a href="#Logstash配置" class="headerlink" title="Logstash配置"></a>Logstash配置</h5><ul>
+<li><h6 id="00-input-conf"><a href="#00-input-conf" class="headerlink" title="00_input.conf"></a>00_input.conf</h6></li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">input &#123;</span><br><span class="line">  beats &#123;</span><br><span class="line">    port =&gt; 5010</span><br><span class="line">    codec =&gt; <span class="string">"json_lines"</span></span><br><span class="line">    tags =&gt; [<span class="string">"beats"</span>]</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><h6 id="50-suricata-conf"><a href="#50-suricata-conf" class="headerlink" title="50_suricata.conf"></a>50_suricata.conf</h6></li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">filter &#123;</span><br><span class="line">  <span class="keyword">if</span> [application] == <span class="string">"suricata"</span> &#123;</span><br><span class="line">    date &#123;</span><br><span class="line">      match =&gt; [ <span class="string">"timestamp"</span>, <span class="string">"ISO8601"</span> ]</span><br><span class="line">      target =&gt; <span class="string">"timestamp"</span></span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><h6 id="mapping-json"><a href="#mapping-json" class="headerlink" title="mapping.json"></a>mapping.json</h6></li>
+</ul>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    <span class="attr">"common_mapping"</span>: &#123;</span><br><span class="line">        <span class="attr">"src_ip"</span>: <span class="string">"srcip"</span>,</span><br><span class="line">        <span class="attr">"dest_ip"</span>: <span class="string">"dstip"</span>,</span><br><span class="line">        <span class="attr">"src_port"</span>: <span class="string">"srcport"</span>,</span><br><span class="line">        <span class="attr">"dest_port"</span>: <span class="string">"dstport"</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><h6 id="70-siem-plugin-suricata-conf"><a href="#70-siem-plugin-suricata-conf" class="headerlink" title="70_siem-plugin-suricata.conf"></a>70_siem-plugin-suricata.conf</h6></li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">filter &#123;</span><br><span class="line">  <span class="keyword">if</span> [event_type] == <span class="string">"alert"</span> &#123;</span><br><span class="line">    ruby &#123;</span><br><span class="line">      init =&gt; <span class="string">"</span></span><br><span class="line"><span class="string">        require 'json'</span></span><br><span class="line"><span class="string">        mapping_json = File.read('/etc/logstash/mappings/wazuh/mapping.json')</span></span><br><span class="line"><span class="string">        mapping = JSON.parse(mapping_json)</span></span><br><span class="line"><span class="string">        @common_mapping = mapping['common_mapping']</span></span><br><span class="line"><span class="string">      "</span></span><br><span class="line">      code =&gt; <span class="string">"</span></span><br><span class="line"><span class="string">        keys = event.to_hash.keys</span></span><br><span class="line"><span class="string">        keys.each do |key|</span></span><br><span class="line"><span class="string">            if @common_mapping.include? key then</span></span><br><span class="line"><span class="string">                value = event.get(key)</span></span><br><span class="line"><span class="string">                event.remove(key)</span></span><br><span class="line"><span class="string">                new_key = @common_mapping[key]</span></span><br><span class="line"><span class="string">                event.set(new_key, value)</span></span><br><span class="line"><span class="string">            end</span></span><br><span class="line"><span class="string">        end</span></span><br><span class="line"><span class="string">        event.set('product', 'Intrusion Detection System')</span></span><br><span class="line"><span class="string">        sensor = event.get('[host][name]')</span></span><br><span class="line"><span class="string">        event.set('sensor', sensor)</span></span><br><span class="line"><span class="string">      "</span></span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><h6 id="99-output-conf"><a href="#99-output-conf" class="headerlink" title="99_output.conf"></a>99_output.conf</h6></li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">output &#123;</span><br><span class="line">  syslog &#123;</span><br><span class="line">    host =&gt; <span class="string">"192.168.199.97"</span></span><br><span class="line">    protocol =&gt; <span class="string">"tcp"</span></span><br><span class="line">    port =&gt; 514</span><br><span class="line">    codec =&gt; <span class="string">"json"</span></span><br><span class="line">    sourcehost =&gt; <span class="string">"logstash"</span></span><br><span class="line">    appname =&gt; <span class="string">"NORMALIZED"</span></span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">#stdout &#123;</span></span><br><span class="line">    <span class="comment">#codec =&gt; rubydebug</span></span><br><span class="line">  <span class="comment">#&#125;</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h5 id="Wazuh配置"><a href="#Wazuh配置" class="headerlink" title="Wazuh配置"></a>Wazuh配置</h5><ul>
+<li><h6 id="custom-syscheck-py"><a href="#custom-syscheck-py" class="headerlink" title="custom-syscheck.py"></a>custom-syscheck.py</h6><p>Wazuh Manager端新增预处理脚本对指定的安全事件进行预处理。如: syscheck事件增加<code>srcip</code>字段。</p>
+</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> json</span><br><span class="line"><span class="keyword">import</span> sys</span><br><span class="line"><span class="keyword">import</span> time</span><br><span class="line"><span class="keyword">import</span> os</span><br><span class="line"><span class="keyword">from</span> socket <span class="keyword">import</span> socket, AF_UNIX, SOCK_DGRAM</span><br><span class="line"><span class="keyword">from</span> datetime <span class="keyword">import</span> datetime, timedelta, timezone</span><br><span class="line"></span><br><span class="line"><span class="comment"># ossec.conf configuration:</span></span><br><span class="line"><span class="comment">#  &lt;integration&gt;</span></span><br><span class="line"><span class="comment">#      &lt;name&gt;custom-syscheck&lt;/name&gt;</span></span><br><span class="line"><span class="comment">#      &lt;rule_id&gt;554&lt;rule_id&gt;</span></span><br><span class="line"><span class="comment">#      &lt;group&gt;syscheck&lt;/group&gt;</span></span><br><span class="line"><span class="comment">#      &lt;alert_format&gt;json&lt;/alert_format&gt;</span></span><br><span class="line"><span class="comment">#  &lt;/integration&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Global vars</span></span><br><span class="line">debug_enabled = <span class="literal">False</span></span><br><span class="line">pwd = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))</span><br><span class="line">json_alert = &#123;&#125;</span><br><span class="line">now = time.strftime(<span class="string">"%a %b %d %H:%M:%S %Z %Y"</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># Set paths</span></span><br><span class="line">log_file = <span class="string">'&#123;0&#125;/logs/integrations.log'</span>.format(pwd)</span><br><span class="line">syscheck_file = <span class="string">'&#123;0&#125;/logs/syscheck.json'</span>.format(pwd)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">iso8601</span><span class="params">(hours=<span class="number">8</span>)</span>:</span></span><br><span class="line">    td = timedelta(hours=hours)</span><br><span class="line">    tz = timezone(td)</span><br><span class="line">    <span class="keyword">return</span> datetime.now(tz=tz).isoformat()</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">main</span><span class="params">(args)</span>:</span></span><br><span class="line">    debug(<span class="string">"# Starting"</span>)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># Read args</span></span><br><span class="line">    alert_file_location = args[<span class="number">1</span>]</span><br><span class="line"></span><br><span class="line">    debug(<span class="string">"# File location"</span>)</span><br><span class="line">    debug(alert_file_location)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># Load alert. Parse JSON object.</span></span><br><span class="line">    <span class="keyword">with</span> open(alert_file_location) <span class="keyword">as</span> alert_file:</span><br><span class="line">        json_alert = json.load(alert_file)</span><br><span class="line">    debug(<span class="string">"# Processing alert"</span>)</span><br><span class="line">    debug(json_alert)</span><br><span class="line"></span><br><span class="line">    alert = normalized_data(json_alert)</span><br><span class="line">    <span class="keyword">with</span> open(syscheck_file, <span class="string">'a'</span>) <span class="keyword">as</span> f:</span><br><span class="line">        msg = json.dumps(alert)</span><br><span class="line">        f.write(msg + <span class="string">'\n'</span>)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">debug</span><span class="params">(msg)</span>:</span></span><br><span class="line">    <span class="keyword">if</span> debug_enabled:</span><br><span class="line">        msg = <span class="string">"&#123;0&#125;: &#123;1&#125;\n"</span>.format(now, msg)</span><br><span class="line">        <span class="keyword">with</span> open(log_file, <span class="string">"a"</span>) <span class="keyword">as</span> f:</span><br><span class="line">            f.write(msg)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">normalized_data</span><span class="params">(alert)</span>:</span></span><br><span class="line">    <span class="keyword">if</span> alert[<span class="string">'agent'</span>][<span class="string">'id'</span>] == <span class="string">'000'</span>:</span><br><span class="line">        alert[<span class="string">'srcip'</span>] = <span class="string">"192.168.199.97"</span>	<span class="comment"># Wazuh Manager</span></span><br><span class="line">        alert[<span class="string">'dstip'</span>] = <span class="string">"192.168.199.97"</span>	<span class="comment"># Wazuh Manager</span></span><br><span class="line">    <span class="keyword">elif</span> alert[<span class="string">'agent'</span>].get(<span class="string">'ip'</span>):</span><br><span class="line">        alert[<span class="string">'srcip'</span>] = alert[<span class="string">'agent'</span>][<span class="string">'ip'</span>]</span><br><span class="line">        alert[<span class="string">'dstip'</span>] = alert[<span class="string">'agent'</span>][<span class="string">'ip'</span>]</span><br><span class="line">    alert[<span class="string">'integration'</span>] = <span class="string">'custom-syscheck'</span></span><br><span class="line">    alert[<span class="string">'create_timestamp'</span>] = iso8601()</span><br><span class="line">    debug(alert)</span><br><span class="line">    <span class="keyword">return</span>(alert)</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:</span><br><span class="line">    <span class="keyword">try</span>:</span><br><span class="line">        <span class="comment"># Read arguments</span></span><br><span class="line">        bad_arguments = <span class="literal">False</span></span><br><span class="line">        <span class="keyword">if</span> len(sys.argv) &gt;= <span class="number">4</span>:</span><br><span class="line">            msg = <span class="string">'&#123;0&#125; &#123;1&#125; &#123;2&#125; &#123;3&#125; &#123;4&#125;'</span>.format(now, sys.argv[<span class="number">1</span>], sys.argv[<span class="number">2</span>], sys.argv[<span class="number">3</span>], sys.argv[<span class="number">4</span>] <span class="keyword">if</span> len(sys.argv) &gt; <span class="number">4</span> <span class="keyword">else</span> <span class="string">''</span>)</span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            msg = <span class="string">'&#123;0&#125; Wrong arguments'</span>.format(now)</span><br><span class="line">            bad_arguments = <span class="literal">True</span></span><br><span class="line"></span><br><span class="line">        <span class="comment"># Logging the call</span></span><br><span class="line">        <span class="keyword">with</span> open(log_file, <span class="string">'a'</span>) <span class="keyword">as</span> f:</span><br><span class="line">            f.write(msg + <span class="string">'\n'</span>)</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> bad_arguments:</span><br><span class="line">            debug(<span class="string">"# Exiting: Bad arguments."</span>)</span><br><span class="line">            sys.exit(<span class="number">1</span>)</span><br><span class="line"></span><br><span class="line">        <span class="comment"># Main function</span></span><br><span class="line">        main(sys.argv)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">except</span> Exception <span class="keyword">as</span> e:</span><br><span class="line">        debug(str(e))</span><br><span class="line">        <span class="keyword">raise</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><h6 id="ossec-conf"><a href="#ossec-conf" class="headerlink" title="ossec.conf"></a>ossec.conf</h6><ul>
+<li>配置syslog选用<strong>TCP</strong>协议;</li>
+<li>加载预处理脚本;</li>
+<li>加载脚本输出日志;</li>
+</ul>
+</li>
+</ul>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">ossec_config</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">remote</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">connection</span>&gt;</span>syslog<span class="tag">&lt;/<span class="name">connection</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">port</span>&gt;</span>514<span class="tag">&lt;/<span class="name">port</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">protocol</span>&gt;</span>tcp<span class="tag">&lt;/<span class="name">protocol</span>&gt;</span> <span class="comment">&lt;!-- udp(default)/tcp --&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">allowed-ips</span>&gt;</span>192.168.199.0/24<span class="tag">&lt;/<span class="name">allowed-ips</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">remote</span>&gt;</span></span><br><span class="line">  </span><br><span class="line">  <span class="comment">&lt;!-- Custom external Integration --&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">integration</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">name</span>&gt;</span>custom-syscheck<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">group</span>&gt;</span>syscheck<span class="tag">&lt;/<span class="name">group</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">alert_format</span>&gt;</span>json<span class="tag">&lt;/<span class="name">alert_format</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">integration</span>&gt;</span></span><br><span class="line">  </span><br><span class="line">  <span class="comment">&lt;!-- Custom syscheck.json --&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">localfile</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">log_format</span>&gt;</span>json<span class="tag">&lt;/<span class="name">log_format</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">location</span>&gt;</span>/var/ossec/logs/syscheck.json<span class="tag">&lt;/<span class="name">location</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">localfile</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">ossec_config</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><h6 id="Decoders-local-decoder-normalized-xml"><a href="#Decoders-local-decoder-normalized-xml" class="headerlink" title="Decoders - local_decoder_normalized.xml"></a>Decoders - local_decoder_normalized.xml</h6></li>
+</ul>
+<p><strong>Sample</strong></p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">&lt;!--</span></span><br><span class="line"><span class="comment">2020 Mar 03 02:53:39 logstash NORMALIZED[-]: &#123;"timestamp":"2020-02-21T19:47:04.382300+0800","flow_id":1133835979634527,"in_iface":"wlp3s0","event_type":"alert","src_ip":"192.168.199.97","src_port":60022,"dest_ip":"192.168.199.162","dest_port":59143,"proto":"TCP","alert":&#123;"action":"allowed","gid":1,"signature_id":123456,"rev":1,"signature":"LOCAL RULES XXX","severity":3&#125;&#125;</span></span><br><span class="line"><span class="comment">--&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">decoder</span> <span class="attr">name</span>=<span class="string">"nta_json"</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">prematch</span>&gt;</span>NORMALIZED[-]: <span class="tag">&lt;/<span class="name">prematch</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">plugin_decoder</span> <span class="attr">offset</span>=<span class="string">"after_prematch"</span>&gt;</span>JSON_Decoder<span class="tag">&lt;/<span class="name">plugin_decoder</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">decoder</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><h6 id="Rules-0901-local-raw-xml"><a href="#Rules-0901-local-raw-xml" class="headerlink" title="Rules - 0901-local_raw.xml"></a>Rules - 0901-local_raw.xml</h6><ul>
+<li>默认引用的解码器为<code>json</code>, 这里需要修改为刚才新增的<code>nta_json</code>;</li>
+<li>通过<code>overwrite=yes</code>覆盖原始规则;</li>
+</ul>
+</li>
+</ul>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">group</span> <span class="attr">name</span>=<span class="string">"suricata,"</span>&gt;</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">&lt;!-- /var/ossec/ruleset/rules/0475-suricata_rules.xml --&gt;</span></span><br><span class="line">    <span class="comment">&lt;!-- Defind Suricata Rules --&gt;</span></span><br><span class="line">    <span class="comment">&lt;!-- ID: 86600 - 86699 --&gt;</span></span><br><span class="line"></span><br><span class="line">    <span class="tag">&lt;<span class="name">rule</span> <span class="attr">id</span>=<span class="string">"86600"</span> <span class="attr">level</span>=<span class="string">"0"</span> <span class="attr">overwrite</span>=<span class="string">"yes"</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">decoded_as</span>&gt;</span>nta_json<span class="tag">&lt;/<span class="name">decoded_as</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">field</span> <span class="attr">name</span>=<span class="string">"timestamp"</span>&gt;</span>\.+<span class="tag">&lt;/<span class="name">field</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">field</span> <span class="attr">name</span>=<span class="string">"event_type"</span>&gt;</span>\.+<span class="tag">&lt;/<span class="name">field</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">description</span>&gt;</span>Suricata messages.<span class="tag">&lt;/<span class="name">description</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">options</span>&gt;</span>no_full_log<span class="tag">&lt;/<span class="name">options</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">rule</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;/<span class="name">group</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><h6 id="Rules-0905-local-syscheck-xml"><a href="#Rules-0905-local-syscheck-xml" class="headerlink" title="Rules - 0905-local_syscheck.xml"></a>Rules - 0905-local_syscheck.xml</h6><p>为预处理脚本生成的日志进行解析</p>
+</li>
+</ul>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">group</span> <span class="attr">name</span>=<span class="string">"syscheck,"</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">rule</span> <span class="attr">id</span>=<span class="string">"187100"</span> <span class="attr">level</span>=<span class="string">"7"</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">decoded_as</span>&gt;</span>json<span class="tag">&lt;/<span class="name">decoded_as</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">field</span> <span class="attr">name</span>=<span class="string">"integration"</span>&gt;</span>custom-syscheck<span class="tag">&lt;/<span class="name">field</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">description</span>&gt;</span>syscheck integration messages.<span class="tag">&lt;/<span class="name">description</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">options</span>&gt;</span>no_full_log<span class="tag">&lt;/<span class="name">options</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">rule</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">group</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><h6 id="Rules-9999-local-composite-xml"><a href="#Rules-9999-local-composite-xml" class="headerlink" title="Rules - 9999-local_composite.xml"></a>Rules - 9999-local_composite.xml</h6><p>关联告警, 当检测到WebShell上传事件后300秒内, 再次检测到了文件上传事件。且源地址均相同, 将会触发此告警。</p>
+</li>
+</ul>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">group</span> <span class="attr">name</span>=<span class="string">"local,composite,"</span>&gt;</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">&lt;!-- Local Composite Rules Range ID: 200000 - 205000 --&gt;</span></span><br><span class="line"></span><br><span class="line">    <span class="tag">&lt;<span class="name">rule</span> <span class="attr">id</span>=<span class="string">"200000"</span> <span class="attr">level</span>=<span class="string">"15"</span> <span class="attr">frequency</span>=<span class="string">"2"</span> <span class="attr">timeframe</span>=<span class="string">"300"</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">if_matched_sid</span>&gt;</span>101000<span class="tag">&lt;/<span class="name">if_matched_sid</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">if_sid</span>&gt;</span>187100<span class="tag">&lt;/<span class="name">if_sid</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">same_source_ip</span> /&gt;</span>	<span class="comment">&lt;!-- 通过IP进行关联 --&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">description</span>&gt;</span>检测到服务器: $(srcip), 被上传WebShell.<span class="tag">&lt;/<span class="name">description</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">options</span>&gt;</span>no_full_log<span class="tag">&lt;/<span class="name">options</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">rule</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;/<span class="name">group</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="示例"><a href="#示例" class="headerlink" title="示例"></a>示例</h4><p>待更新…</p>
+<h4 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h4><ul>
+<li><p><strong><a href="https://wazuh.com/blog/how-to-forward-android-syslog-to-wazuh/" target="_blank" rel="noopener">How to forward Android syslog to Wazuh</a></strong></p>
+</li>
+<li><p><strong><a href="https://wazuh.com/blog/how-to-configure-rsyslog-client-to-send-events-to-wazuh/" target="_blank" rel="noopener">How to configure Rsyslog client to send events to Wazuh</a></strong></p>
+</li>
+<li><p><strong><a href="https://wazuh.com/blog/how-to-integrate-external-software-using-integrator/" target="_blank" rel="noopener">How to integrate external software using Integrator</a></strong></p>
+</li>
+</ul>
+
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+          <div class="post-eof"></div>
+        
+      </footer>
+  </article>
+  
+  
+  
+
+    
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/01/31/Wazuh-利用CDB-list过滤私网IP地址/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1424,205 +1617,6 @@
   
 
     
-        
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/10/16/我在云上的日子-AWS上流量镜像遇到的坑/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Canon">
-      <meta itemprop="description" content="一个热爱健身的安全分析师">
-      <meta itemprop="image" content="/images/avatar.jpeg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Canon's Blog">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-            
-            <a href="/2019/10/16/我在云上的日子-AWS上流量镜像遇到的坑/" class="post-title-link" itemprop="url">我在'云'上的日子 - AWS上流量镜像遇到的坑</a>
-          
-        </h1>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              
-                
-              
-
-              <time title="创建时间：2019-10-16 17:24:30" itemprop="dateCreated datePublished" datetime="2019-10-16T17:24:30+08:00">2019-10-16</time>
-            </span>
-          
-            
-
-            
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2019-10-18 11:29:55" itemprop="dateModified" datetime="2019-10-18T11:29:55+08:00">2019-10-18</time>
-              </span>
-            
-          
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/NIDS/" itemprop="url" rel="index"><span itemprop="name">NIDS</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>​    </p>
-<p>​        自从AWS在6月份新出了<strong>Traffic Mirroring</strong>功能后, 我也算是第一时间使用了这个功能。与传统的交换机流量镜像不同的是, AWS上是将流量镜像后的数据通过<strong>VXLAN</strong>协议发送至流量分析引擎(<strong>Suricata</strong>、<strong>Zeek</strong>)。正是由于这一点让我碰到了以下几个问题, 这里写出来希望对大家有所帮助。</p>
-<ol>
-<li>接收流量镜像的目标端, 也就是我们常说的流量分析引擎端是有接收限制的。</li>
-</ol>
-<p>​       如果你是在一个非专用实例上部署的Suricata、Zeek。那么你只能最多同时接收10个源的流量镜像, 也就是你只能接收10个网卡的数据。很不巧的是我们碰上了这个问题, 解决方案也很简单, 使用专用实例(<strong>Dedicated instance</strong>) 或者 使用AWS的网络负载均衡(<strong>Network Load Balancer</strong>)。前者可以将Limit提升到<strong>100</strong>, 后者将<strong>不受限</strong>。如图:</p>
-<p><img src="/2019/10/16/我在云上的日子-AWS上流量镜像遇到的坑/image-20191016164935291.png" alt="image-20191016164935291"></p>
-<hr>
-<ol start="2">
-<li>C5与C4实例的差异</li>
-</ol>
-<p>​        就我目前使用的实例而言, 分别测试过C5 与 C4两种实例。他们的网卡驱动有所区别的, 如图:</p>
-<p><img src="/2019/10/16/我在云上的日子-AWS上流量镜像遇到的坑/image-20191016160923628.png" alt="image-20191016160923628"></p>
-<p>​        我这使用下来最直观的区别, 在C4实例上若不使用PF_RING捕包模式的话, Suricata丢包率感人, 0.5 Gbps就开始丢包。测试的机器配置: 32C 60G的机器, 切换到PF_RING捕包模式无此问题。反之C5实例就不存在这个问题, AF-PACKET直接上到2 Gbps的纯HTTP流量都没有丢包。硬件配置: 16C 32G的机器。</p>
-<hr>
-<ol start="3">
-<li>超过<strong>MTU: 9001</strong>数据包被截断</li>
-</ol>
-<p>​      这几天在排查安全事件时, 发现监控的同一台Nginx上解析出的流量(HTTP事件)与日志(HTTP事件)数量相差较大。经过两天的排查终于定位了问题, Suricata kernel 并没有丢包, 所以怀疑是不是Suricata HTTP解析出错导致。最终通过抓包发现导致该问题的”罪魁祸首”就是<strong>VXLAN</strong>, 由于AWS在流量镜像时采用了<strong>VXLAN</strong>协议进行封装, 导致在原有<strong>MTU</strong>的基础上<strong>增加了50个字节</strong>, 造成数据包被截断, 无法还原出HTTP事件。以下截图就是一个无法被正确还原HTTP事件的数据包, 我用Suricata载入数据包后, 只还原出了长度<strong>9015</strong>数据包之前的HTTP信息, 长度<strong>9015</strong>数据包之后的所有事件均无法被还原。</p>
-<p><img src="/2019/10/16/我在云上的日子-AWS上流量镜像遇到的坑/image-20191014095249725.png" alt="image-20191014095249725"></p>
-<p><img src="/2019/10/16/我在云上的日子-AWS上流量镜像遇到的坑/image-20191014094741753.png" alt="image-20191014094741753"></p>
-<p><strong>官方描述:</strong></p>
-<p>​        For example, if an 8996 byte packet is mirrored, and the traffic mirror target MTU value is 9001 bytes, the mirror encapsulation results in the mirrored packet being greater than the MTU value. In this case, the mirror packet is truncated. To prevent mirror packets from being truncated, set the traffic mirror source interface MTU value to 54 bytes less than the traffic mirror target MTU value. For more information about configuring the network MTU value, see Network Maximum Transmission Unit (MTU) for Your EC2 Instance in the <em>Amazon EC2 User Guide for Linux Instances</em>.</p>
-<p>​        例如，如果对8996字节的数据包进行了镜像，并且流量镜像目标MTU值为9001字节，则镜像封装会导致镜像的数据包大于MTU值。在这种情况下，镜像数据包将被截断。为防止镜像数据包被截断，请将流量镜像源接口的MTU值设置为比流量镜像目标MTU值小54个字节。有关配置网络MTU值的更多信息，请参阅Amazon EC2 Linux实例用户指南中的EC2实例的网络最大传输单位（MTU）。</p>
-<hr>
-<p><strong>关于VXLAN导致Suricata无法正常解析数据的问题, 特地进行了测试:</strong></p>
-<p>准备工作:</p>
-<ul>
-<li>新建了<strong>test_files</strong>文件, 该文件只包含内容’<strong>hello, world!</strong>‘;</li>
-<li>为了使数据包在传输时满足<strong>MTU: 9001</strong>, 手动生成了一个10MB空文件<strong>10mb_exist_files</strong>. </li>
-</ul>
-<p>共计访问: 14次</p>
-<p>访问顺序:</p>
-<ol>
-<li>Client -&gt; Web Server -&gt; <strong>test_files</strong>  3 (次)</li>
-<li>Client -&gt; Web Server -&gt; <strong>10mb_exist_files</strong> 1 (次)</li>
-<li>Client -&gt; Web Server -&gt; <strong>test_files</strong> 10 (次)</li>
-</ol>
-<p>正常情况:</p>
-<ul>
-<li>Client -&gt; Web Server -&gt; <strong>test_files</strong>  3 (次) - 正常</li>
-<li>Client -&gt; Web Server -&gt; <strong>10mb_exist_files</strong> 1 (次) - 正常</li>
-<li>Client -&gt; Web Server -&gt; <strong>test_files</strong> 10 (次) - 正常</li>
-</ul>
-<p>异常情况:</p>
-<ul>
-<li>Client -&gt; Web Server -&gt; <strong>test_files</strong>  3 (次) - 正常</li>
-<li>Client -&gt; Web Server -&gt; <strong>10mb_exist_files</strong> 1 (次) - 异常</li>
-<li>Client -&gt; Web Server -&gt; <strong>test_files</strong> 10 (次) - 丢失</li>
-</ul>
-<p><strong>MTU: 9001</strong></p>
-<ul>
-<li>非镜像流量的数据包详情:</li>
-</ul>
-<p>可以看到从数据包<strong>20</strong>到数据包<strong>6126</strong>之间都是在进行<strong>10MB</strong>文件(<strong>10mb_exist_files</strong>)的传输过程。</p>
-<p><img src="/2019/10/16/我在云上的日子-AWS上流量镜像遇到的坑/image-20191016103409831.png" alt="image-20191016103409831"></p>
-<hr>
-<p>从http数据包中可以看出, 这里请求包与响应包都可以正常被还原出来。</p>
-<p><img src="/2019/10/16/我在云上的日子-AWS上流量镜像遇到的坑/image-20191016104502919.png" alt="image-20191016104502919"></p>
-<hr>
-<p>数据包在Suricata上的解析结果:</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ cat http-2019-10-16.json | wc -l</span><br><span class="line">14</span><br></pre></td></tr></table></figure>
-
-<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    <span class="attr">"timestamp"</span>: <span class="string">"2019-10-15T22:52:10.180505+0800"</span>,</span><br><span class="line">    <span class="attr">"flow_id"</span>: <span class="number">415026399241324</span>,</span><br><span class="line">    <span class="attr">"pcap_cnt"</span>: <span class="number">6127</span>,</span><br><span class="line">    <span class="attr">"event_type"</span>: <span class="string">"http"</span>,</span><br><span class="line">    <span class="attr">"src_ip"</span>: <span class="string">"y.y.y.y"</span>,</span><br><span class="line">    <span class="attr">"src_port"</span>: <span class="number">43418</span>,</span><br><span class="line">    <span class="attr">"dest_ip"</span>: <span class="string">"x.x.x.x"</span>,</span><br><span class="line">    <span class="attr">"dest_port"</span>: <span class="number">8000</span>,</span><br><span class="line">    <span class="attr">"proto"</span>: <span class="string">"TCP"</span>,</span><br><span class="line">    <span class="attr">"tx_id"</span>: <span class="number">3</span>,</span><br><span class="line">    <span class="attr">"http"</span>: &#123;</span><br><span class="line">        <span class="attr">"hostname"</span>: <span class="string">"x.x.x.x"</span>,</span><br><span class="line">        <span class="attr">"http_port"</span>: <span class="number">8000</span>,</span><br><span class="line">        <span class="attr">"url"</span>: <span class="string">"/file/10mb_exist_files"</span>,</span><br><span class="line">        <span class="attr">"http_user_agent"</span>: <span class="string">"python-requests/1.2.3 CPython/2.7.16 Linux/4.14.123-86.109.amzn1.x86_64"</span>,</span><br><span class="line">        <span class="attr">"http_content_type"</span>: <span class="string">"text/html"</span>,</span><br><span class="line">        <span class="attr">"accept"</span>: <span class="string">"*/*"</span>,</span><br><span class="line">        <span class="attr">"accept_encoding"</span>: <span class="string">"gzip, deflate, compress"</span>,</span><br><span class="line">        <span class="attr">"content_length"</span>: <span class="string">"41943044"</span>,</span><br><span class="line">        <span class="attr">"content_type"</span>: <span class="string">"text/html; charset=utf-8"</span>,</span><br><span class="line">        <span class="attr">"date"</span>: <span class="string">"Tue, 15 Oct 2019 14:52:10 GMT"</span>,</span><br><span class="line">        <span class="attr">"server"</span>: <span class="string">"Werkzeug/0.16.0 Python/2.7.16"</span>,</span><br><span class="line">        <span class="attr">"http_method"</span>: <span class="string">"GET"</span>,</span><br><span class="line">        <span class="attr">"protocol"</span>: <span class="string">"HTTP/1.1"</span>,</span><br><span class="line">        <span class="attr">"status"</span>: <span class="number">200</span>,</span><br><span class="line">        <span class="attr">"length"</span>: <span class="number">41943044</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<hr>
-<ul>
-<li><strong>镜像流量的数据包详情:</strong>(也就是<strong>VXLAN</strong>封装后的数据包)</li>
-</ul>
-<p>同样可以看到从数据包<strong>26</strong>到数据包<strong>6170</strong>之间都是在进行<strong>10MB</strong>文件(<strong>10mb_exist_files</strong>)的传输过程。但是在第<strong>34</strong>个数据包中可以看到, 已经标注了数据超出了最大长度。</p>
-<p><img src="/2019/10/16/我在云上的日子-AWS上流量镜像遇到的坑/image-20191016105636906.png" alt="image-20191016105636906"></p>
-<hr>
-<p>超出长度的数据将会被截断, 标注: <strong>50 bytes missing in capture file</strong>。</p>
-<p><img src="/2019/10/16/我在云上的日子-AWS上流量镜像遇到的坑/image-20191016150322620.png" alt="image-20191016150322620"></p>
-<p>从HTTP数据包中可以看出, 这里只有请求包, 由于后续的响应包超出了<strong>MTU: 9001</strong>,  因此并没有响应包。</p>
-<p><img src="/2019/10/16/我在云上的日子-AWS上流量镜像遇到的坑/image-20191016105948606.png" alt="image-20191016105948606"></p>
-<hr>
-<p>数据包在Suricata上的解析结果:</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ cat http-2019-10-16.json | wc -l</span><br><span class="line">4</span><br></pre></td></tr></table></figure>
-
-<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    <span class="attr">"timestamp"</span>: <span class="string">"2019-10-15T22:52:48.295823+0800"</span>,</span><br><span class="line">    <span class="attr">"flow_id"</span>: <span class="number">1746715371266426</span>,</span><br><span class="line">    <span class="attr">"event_type"</span>: <span class="string">"http"</span>,</span><br><span class="line">    <span class="attr">"src_ip"</span>: <span class="string">"y.y.y.y"</span>,</span><br><span class="line">    <span class="attr">"src_port"</span>: <span class="number">43420</span>,</span><br><span class="line">    <span class="attr">"dest_ip"</span>: <span class="string">"x.x.x.x"</span>,</span><br><span class="line">    <span class="attr">"dest_port"</span>: <span class="number">8000</span>,</span><br><span class="line">    <span class="attr">"proto"</span>: <span class="string">"TCP"</span>,</span><br><span class="line">    <span class="attr">"tx_id"</span>: <span class="number">3</span>,</span><br><span class="line">    <span class="attr">"http"</span>: &#123;</span><br><span class="line">        <span class="attr">"hostname"</span>: <span class="string">"x.x.x.x"</span>,</span><br><span class="line">        <span class="attr">"http_port"</span>: <span class="number">8000</span>,</span><br><span class="line">        <span class="attr">"url"</span>: <span class="string">"/file/10mb_exist_files"</span>,</span><br><span class="line">        <span class="attr">"http_user_agent"</span>: <span class="string">"python-requests/1.2.3 CPython/2.7.16 Linux/4.14.123-86.109.amzn1.x86_64"</span>,</span><br><span class="line">        <span class="attr">"accept"</span>: <span class="string">"*/*"</span>,</span><br><span class="line">        <span class="attr">"accept_encoding"</span>: <span class="string">"gzip, deflate, compress"</span>,</span><br><span class="line">        <span class="attr">"http_method"</span>: <span class="string">"GET"</span>,</span><br><span class="line">        <span class="attr">"protocol"</span>: <span class="string">"HTTP/1.1"</span>,</span><br><span class="line">        <span class="attr">"status"</span>: <span class="number">200</span>,</span><br><span class="line">        <span class="attr">"length"</span>: <span class="number">0</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p><strong>结论:</strong></p>
-<p>​        相比非镜像流量的数据包, Suricata 少了后续10条http请求的数据解析。针对访问<strong>10mb_exist_files</strong>的请求, 由于超过了MTU, 数据包被阶段了, http的解析数据也是不完整的。</p>
-<p><strong>解决方案:</strong></p>
-<p>​        这里直接引用AWS的官方文档描述。如果对8996字节的数据包进行了镜像，并且流量镜像目标MTU值为9001字节，则镜像封装会导致镜像的数据包大于MTU值。在这种情况下，镜像数据包将被截断。为防止镜像数据包被截断，请将流量镜像源接口的MTU值设置为比流量镜像目标MTU值小54个字节。有关配置网络MTU值的更多信息，请参阅Amazon EC2 Linux实例用户指南中的EC2实例的网络最大传输单位（MTU）。</p>
-<p>​        一般来说，降低 MTU 的话，有可能发现网路传输效能有下降，这是因为每个封包 size 变小，所以传送同样的资料量，封包数就会变多，造成 overhead 变多。但是对于传输是不会产生错误的状况的。</p>
-<hr>
-<p><strong>MTU:1500</strong></p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">$ ip link show eth0</span><br><span class="line">2: eth0: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 9001 qdisc mq state UP mode DEFAULT group default qlen 1000</span><br><span class="line">    link/ether 02:8a:2d:87:02:8e brd ff:ff:ff:ff:ff:ff</span><br><span class="line"></span><br><span class="line">$ sudo ip link <span class="built_in">set</span> dev eth0 mtu 1500</span><br><span class="line"></span><br><span class="line">$ ip link show eth0</span><br><span class="line">2: eth0: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qdisc mq state UP mode DEFAULT group default qlen 1000</span><br><span class="line">    link/ether 02:8a:2d:87:02:8e brd ff:ff:ff:ff:ff:ff</span><br></pre></td></tr></table></figure>
-
-<p><img src="/2019/10/16/我在云上的日子-AWS上流量镜像遇到的坑/image-20191016154823748.png" alt="image-20191016154823748"></p>
-<p><img src="/2019/10/16/我在云上的日子-AWS上流量镜像遇到的坑/image-20191016155112376.png" alt="image-20191016155112376"></p>
-<p>数据包在Suricata上的解析结果:</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ cat http-2019-10-16.json | wc -l</span><br><span class="line">14</span><br></pre></td></tr></table></figure>
-
-<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    <span class="attr">"timestamp"</span>: <span class="string">"2019-10-16T15:14:15.576656+0800"</span>,</span><br><span class="line">    <span class="attr">"flow_id"</span>: <span class="number">1135596924232203</span>,</span><br><span class="line">    <span class="attr">"event_type"</span>: <span class="string">"http"</span>,</span><br><span class="line">    <span class="attr">"src_ip"</span>: <span class="string">"y.y.y.y"</span>,</span><br><span class="line">    <span class="attr">"src_port"</span>: <span class="number">43554</span>,</span><br><span class="line">    <span class="attr">"dest_ip"</span>: <span class="string">"x.x.x.x"</span>,</span><br><span class="line">    <span class="attr">"dest_port"</span>: <span class="number">8000</span>,</span><br><span class="line">    <span class="attr">"proto"</span>: <span class="string">"TCP"</span>,</span><br><span class="line">    <span class="attr">"tx_id"</span>: <span class="number">3</span>,</span><br><span class="line">    <span class="attr">"http"</span>: &#123;</span><br><span class="line">        <span class="attr">"hostname"</span>: <span class="string">"x.x.x.x"</span>,</span><br><span class="line">        <span class="attr">"http_port"</span>: <span class="number">8000</span>,</span><br><span class="line">        <span class="attr">"url"</span>: <span class="string">"/file/10mb_exist_files"</span>,</span><br><span class="line">        <span class="attr">"http_user_agent"</span>: <span class="string">"python-requests/1.2.3 CPython/2.7.16 Linux/4.14.123-86.109.amzn1.x86_64"</span>,</span><br><span class="line">        <span class="attr">"http_content_type"</span>: <span class="string">"text/html"</span>,</span><br><span class="line">        <span class="attr">"accept"</span>: <span class="string">"*/*"</span>,</span><br><span class="line">        <span class="attr">"accept_encoding"</span>: <span class="string">"gzip, deflate, compress\n"</span>,</span><br><span class="line">        <span class="attr">"content_length"</span>: <span class="string">"41943044"</span>,</span><br><span class="line">        <span class="attr">"content_type"</span>: <span class="string">"text/html; charset=utf-8"</span>,</span><br><span class="line">        <span class="attr">"date"</span>: <span class="string">"Wed, 16 Oct 2019 07:14:15 GMT"</span>,</span><br><span class="line">        <span class="attr">"server"</span>: <span class="string">"Werkzeug/0.16.0 Python/2.7.16"</span>,</span><br><span class="line">        <span class="attr">"http_method"</span>: <span class="string">"GET"</span>,</span><br><span class="line">        <span class="attr">"protocol"</span>: <span class="string">"HTTP/1.1"</span>,</span><br><span class="line">        <span class="attr">"status"</span>: <span class="number">200</span>,</span><br><span class="line">        <span class="attr">"length"</span>: <span class="number">41943044</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>​        结论: <strong>MTU减小到1500时</strong>, 无论从WireShark来查看或者Suricata协议还原的角度来说, 都是可以的。</p>
-<hr>
-<p>​        写在最后, 说实话AWS提供了在云上的流量镜像确实很不错, 至少比传统在云上每一台机器通过安装agent把流量外发的形式强, 似乎<strong>国内</strong>的云厂商现在也没有这个功能! </p>
-<p>​        不过通过VXLAN将数据包封装后导致MTU超过最大值这问题也确实有点坑。你让已经成型的架构去调整MTU值, 虽然理论上是可行, 但实际生产环境中网络的调整都是比较慎重的, 除非企业现在必须得上流量镜像, 否则不太能说服运维的小伙伴去调整, 要是真出了什么问题, 都是大问题。</p>
-<p><strong>参考</strong></p>
-<ul>
-<li><a href="https://docs.aws.amazon.com/vpc/latest/mirroring/vpc-tm.pdf" target="_blank" rel="noopener">Amazon Virtual Private Cloud Traffic Mirroring</a></li>
-<li><a href="https://community.emc.com/community/support/chinese/teamblog/blog/2016/05/12/大咖讲网络-mtu导致的悲剧" target="_blank" rel="noopener">大咖讲网络-mtu导致的悲剧</a></li>
-<li><a href="https://www.cnblogs.com/sammyliu/p/5079898.html" target="_blank" rel="noopener">Neutron VxLAN + Linux Bridge 环境中的网络 MTU</a></li>
-</ul>
-
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-          <div class="post-eof"></div>
-        
-      </footer>
-  </article>
-  
-  
-  
-
-    
   </div>
 
   
@@ -1675,7 +1669,7 @@
         
           <a href="/archives/">
         
-          <span class="site-state-item-count">15</span>
+          <span class="site-state-item-count">16</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -1688,7 +1682,7 @@
             <a href="/categories/">
           
         
-        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-count">6</span>
         <span class="site-state-item-name">分类</span>
         </a>
       </div>
@@ -1701,7 +1695,7 @@
             <a href="/tags/">
           
         
-        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-count">7</span>
         <span class="site-state-item-name">标签</span>
         </a>
       </div>
