@@ -21,7 +21,7 @@
 </li>
 </ol>
 <p><strong>workflow:</strong></p>
-<p>![image-20200303215020561](Wazuh - 如何对异构数据进行关联告警/image-20200303215020561.png)![image-20200316113023331](Wazuh - 如何对异构数据进行关联告警/image-20200316113023331.png)</p>
+<p><img src="/2020/02/25/Wazuh - 如何对异构数据进行关联告警/image-20200303215020561.png" alt="image-20200303215020561"></p>
 <hr>
 <h5 id="Filebeat配置"><a href="#Filebeat配置" class="headerlink" title="Filebeat配置"></a>Filebeat配置</h5><ul>
 <li><h6 id="filebeat-yaml"><a href="#filebeat-yaml" class="headerlink" title="filebeat.yaml"></a>filebeat.yaml</h6></li>
