@@ -2,7 +2,7 @@
 <search>
   <entry>
     <title>Wazuh - 如何对异构数据进行关联告警</title>
-    <url>/2020/02/25/Wazuh%20-%20%E5%A6%82%E4%BD%95%E5%AF%B9%E5%BC%82%E6%9E%84%E6%95%B0%E6%8D%AE%E8%BF%9B%E8%A1%8C%E5%85%B3%E8%81%94%E5%91%8A%E8%AD%A6/</url>
+    <url>/2020/02/25/Wazuh-%E5%A6%82%E4%BD%95%E5%AF%B9%E5%BC%82%E6%9E%84%E6%95%B0%E6%8D%AE%E8%BF%9B%E8%A1%8C%E5%85%B3%E8%81%94%E5%91%8A%E8%AD%A6/</url>
     <content><![CDATA[<p><strong>写在前面</strong></p>
 <p>​       这并不是什么’<strong>高精尖</strong>‘的架构与技术。这只是我个人在工作中结合目前手头的资源进行了一些’<strong>整合</strong>‘。当然实现这些需求的方法有很多, 商业的<strong>Splunk</strong>、有研发的团队的可以直接上<strong>Flink</strong>、<strong>Esper</strong>。</p>
 <h4 id="需求"><a href="#需求" class="headerlink" title="需求"></a>需求</h4><p>​        由于攻防对抗的升级, 通过传统网络流量很难直接定位到攻击是否成功。因此, 我们需要结合主机端的日志进行研判。</p>
@@ -21,7 +21,7 @@
 </li>
 </ol>
 <p><strong>workflow:</strong></p>
-<p><img src="/2020/02/25/Wazuh - 如何对异构数据进行关联告警/image-20200303215020561.png" alt="image-20200303215020561"></p>
+<p><img src="/2020/02/25/Wazuh-如何对异构数据进行关联告警/image-20200303215020561.png" alt="image-20200303215020561"></p>
 <hr>
 <h5 id="Filebeat配置"><a href="#Filebeat配置" class="headerlink" title="Filebeat配置"></a>Filebeat配置</h5><ul>
 <li><h6 id="filebeat-yaml"><a href="#filebeat-yaml" class="headerlink" title="filebeat.yaml"></a>filebeat.yaml</h6></li>
