@@ -1,6 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title>Elasticsearch-alias与reindex的使用场景</title>
+    <url>/2020/03/29/Elasticsearch-alias%E4%B8%8Ereindex%E7%9A%84%E4%BD%BF%E7%94%A8%E5%9C%BA%E6%99%AF/</url>
+    <content><![CDATA[<h4 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h4><ul>
+<li><strong><a href="https://javasgl.github.io/elastic-search-reindex/" target="_blank" rel="noopener">使用 reindex 来修改 elasticsearch 索引mapping</a></strong></li>
+<li><strong><a href="https://javasgl.github.io/use-alias-migrate-index/" target="_blank" rel="noopener">使用 Elasticsearch alias 功能切换 index</a></strong></li>
+<li><strong><a href="https://blog.csdn.net/mlljava1111/article/details/51218868" target="_blank" rel="noopener">Elasticsearch更改mapping(不停服务重建索引)</a></strong></li>
+<li><strong><a href="https://www.cnblogs.com/jajian/p/10152681.html" target="_blank" rel="noopener">Elasticsearch 技术分析（三）： 索引别名Aliases问题</a></strong></li>
+<li><strong><a href="https://www.jianshu.com/p/f67b046b4d3f" target="_blank" rel="noopener">Elasticsearch 实战案例（索引切分、模板、别名、数据迁移）</a></strong></li>
+<li><strong><a href="http://abusehub-reindex.py/" target="_blank" rel="noopener">abusehub-reindex.py/</a></strong></li>
+</ul>
+<h4 id="reindex"><a href="#reindex" class="headerlink" title="reindex"></a>reindex</h4><figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> elasticsearch <span class="keyword">import</span> Elasticsearch</span><br><span class="line"><span class="keyword">from</span> elasticsearch <span class="keyword">import</span> helpers</span><br><span class="line"></span><br><span class="line">host = [<span class="string">'es_host1'</span>, <span class="string">'es_host2'</span>, <span class="string">'es_host3'</span>]</span><br><span class="line">port = <span class="number">9200</span></span><br><span class="line">timeout = <span class="number">600</span></span><br><span class="line">auth_user = <span class="string">'elastic'</span></span><br><span class="line">auth_password = <span class="string">'hello world'</span></span><br><span class="line">use_ssl = <span class="literal">True</span></span><br><span class="line">ca_certs = <span class="string">'/opt/certs/ca/ca.crt'</span></span><br><span class="line"></span><br><span class="line">es = Elasticsearch(host, port=port, timeout=timeout, http_auth=(auth_user, auth_password), verify_certs=<span class="literal">True</span>, use_ssl=use_ssl, ca_certs=ca_certs)</span><br></pre></td></tr></table></figure>
+
+<h5 id="按照指定日期重建索引"><a href="#按照指定日期重建索引" class="headerlink" title="按照指定日期重建索引"></a>按照指定日期重建索引</h5><figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> datetime</span><br><span class="line"><span class="keyword">import</span> time</span><br><span class="line"></span><br><span class="line">begin_date = (datetime.datetime.now() - datetime.timedelta(days = <span class="number">10</span>)).strftime(<span class="string">"%Y.%m.%d"</span>)</span><br><span class="line">begin_date = datetime.datetime.strptime(begin_date, <span class="string">"%Y.%m.%d"</span>)</span><br><span class="line">end_date = (datetime.datetime.now() - datetime.timedelta(days = <span class="number">1</span>)).strftime(<span class="string">"%Y.%m.%d"</span>)</span><br><span class="line">end_date = datetime.datetime.strptime(end_date, <span class="string">"%Y.%m.%d"</span>)</span><br><span class="line"></span><br><span class="line">date_list = []</span><br><span class="line"><span class="keyword">while</span> begin_date &lt;= end_date:</span><br><span class="line">    date_str = begin_date.strftime(<span class="string">"%Y.%m.%d"</span>)</span><br><span class="line">    date_list.append(date_str)</span><br><span class="line">    begin_date += datetime.timedelta(days=<span class="number">1</span>)</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">date_list</span><br><span class="line">[<span class="string">'2020.03.19'</span>,</span><br><span class="line"> <span class="string">'2020.03.20'</span>,</span><br><span class="line"> <span class="string">'2020.03.21'</span>,</span><br><span class="line"> <span class="string">'2020.03.22'</span>,</span><br><span class="line"> <span class="string">'2020.03.23'</span>,</span><br><span class="line"> <span class="string">'2020.03.24'</span>,</span><br><span class="line"> <span class="string">'2020.03.25'</span>,</span><br><span class="line"> <span class="string">'2020.03.26'</span>,</span><br><span class="line"> <span class="string">'2020.03.27'</span>,</span><br><span class="line"> <span class="string">'2020.03.28'</span>]</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">chunk_size = <span class="number">10000</span></span><br><span class="line"><span class="keyword">for</span> day <span class="keyword">in</span> date_list:</span><br><span class="line">    source_index = <span class="string">'wazuh-alerts-3.x-'</span> + day</span><br><span class="line">    target_index = <span class="string">'siem-alerts-'</span> + day</span><br><span class="line">    helpers.reindex(</span><br><span class="line">        client=es, source_index=source_index, target_index=target_index, </span><br><span class="line">        target_client=es, chunk_size=chunk_size</span><br><span class="line">    )</span><br><span class="line">    print(source_index + <span class="string">' -&gt; '</span> + target_index + <span class="string">' fin.'</span>)</span><br></pre></td></tr></table></figure>
+
+]]></content>
+      <tags>
+        <tag>ElasticSearch</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>Wazuh - 如何对异构数据进行关联告警</title>
     <url>/2020/02/25/Wazuh-%E5%A6%82%E4%BD%95%E5%AF%B9%E5%BC%82%E6%9E%84%E6%95%B0%E6%8D%AE%E8%BF%9B%E8%A1%8C%E5%85%B3%E8%81%94%E5%91%8A%E8%AD%A6/</url>
     <content><![CDATA[<p><strong>写在前面</strong></p>
@@ -745,74 +769,25 @@
   <entry>
     <title>我在'云'上的日子 - Zeek(部署)</title>
     <url>/2019/10/14/%E6%88%91%E5%9C%A8%E4%BA%91%E4%B8%8A%E7%9A%84%E6%97%A5%E5%AD%90%20-%20Zeek%E9%83%A8%E7%BD%B2/</url>
-    <content><![CDATA[<p><a href="https://holdmybeersecurity.com/2019/04/03/part-1-install-setup-zeek-pf_ring-on-ubuntu-18-04-on-proxmox-5-3-openvswitch/" target="_blank" rel="noopener"><strong>PART 1: INSTALL/SETUP ZEEK + PF_RING ON UBUNTU 18.04 ON PROXMOX 5.3 + OPENVSWITCH</strong></a></p>
-<h1 id="Zeek"><a href="#Zeek" class="headerlink" title="Zeek"></a>Zeek</h1><p><strong>参考:</strong></p>
+    <content><![CDATA[<h4 id="Optional-Dependencies"><a href="#Optional-Dependencies" class="headerlink" title="Optional Dependencies"></a>Optional Dependencies</h4><h5 id="PF-RING"><a href="#PF-RING" class="headerlink" title="PF_RING"></a>PF_RING</h5><p><strong>参考:</strong></p>
 <ul>
-<li><strong><a href="https://docs.zeek.org/en/stable/install/install.html" target="_blank" rel="noopener">Installing Zeek</a></strong></li>
+<li><strong><a href="https://docs.zeek.org/en/v3.1.1/configuration/index.html#pf-ring-cluster-configuration" target="_blank" rel="noopener">Installing PF_RING</a></strong></li>
 </ul>
-<p><strong>Required Dependencies</strong></p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ sudo apt-get install cmake make gcc g++ flex bison libpcap-dev libssl-dev python-dev swig zlib1g-dev</span><br></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ sudo git <span class="built_in">clone</span> https://github.com/ntop/PF_RING.git</span><br><span class="line">$ <span class="built_in">cd</span> PF_RING/userland/lib</span><br><span class="line">$ ./configure --prefix=/opt/pfring</span><br><span class="line">$ sudo make install</span><br><span class="line"></span><br><span class="line">$ <span class="built_in">cd</span> ../libpcap</span><br><span class="line">$ ./configure --prefix=/opt/pfring</span><br><span class="line">$ sudo make install</span><br><span class="line"></span><br><span class="line">$ <span class="built_in">cd</span> ../tcpdump</span><br><span class="line">$ ./configure --prefix=/opt/pfring</span><br><span class="line">$ sudo make install</span><br><span class="line"></span><br><span class="line">$ <span class="built_in">cd</span> ../../kernel</span><br><span class="line">$ make</span><br><span class="line">$ sudo make install</span><br><span class="line"></span><br><span class="line">$ modprobe pf_ring enable_tx_capture=0 min_num_slots=65536</span><br></pre></td></tr></table></figure>
 
-<p><em>If your system uses Python 2.7, then you will also need to install the <code>python-ipaddres</code> package.</em></p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ sudo apt-get install python-ipaddress</span><br></pre></td></tr></table></figure>
-
-<p><strong>Optional Dependencies</strong></p>
-<ul>
-<li>libmaxminddb (for geolocating IP addresses)</li>
-<li>sendmail (enables Bro and BroControl to send mail)</li>
-<li>curl (used by a Bro script that implements active HTTP)</li>
-<li>gperftools (tcmalloc is used to improve memory and CPU usage)</li>
-<li>jemalloc (<a href="http://www.canonware.com/jemalloc/" target="_blank" rel="noopener">http://www.canonware.com/jemalloc/</a>)</li>
-<li>PF_RING (Linux only, see <a href="https://docs.zeek.org/en/stable/configuration/index.html" target="_blank" rel="noopener">Cluster Configuration</a>)</li>
-<li>krb5 libraries and headers</li>
-<li>ipsumdump (for trace-summary; <a href="http://www.cs.ucla.edu/~kohler/ipsumdump" target="_blank" rel="noopener">http://www.cs.ucla.edu/~kohler/ipsumdump</a>)</li>
-</ul>
-<p><strong>Installing Bro</strong></p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ sudo git <span class="built_in">clone</span> --recursive https://github.com/zeek/zeek</span><br><span class="line">$ ./configure --with-pcap=/usr/<span class="built_in">local</span>/include --with-geoip=/usr/share/GeoIP</span><br><span class="line">$ make</span><br><span class="line">$ sudo make install</span><br></pre></td></tr></table></figure>
-
-<p><strong>Add PATH</strong></p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ <span class="built_in">export</span> PATH=/usr/<span class="built_in">local</span>/zeek/bin:<span class="variable">$PATH</span></span><br><span class="line">$ <span class="built_in">source</span> ~/.bashrc</span><br></pre></td></tr></table></figure>
-
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ sudo vim ~/.bashrc</span><br><span class="line"><span class="built_in">export</span> PATH=/usr/<span class="built_in">local</span>/zeek/bin:<span class="variable">$PATH</span></span><br></pre></td></tr></table></figure>
-
-<p><strong>Enable Json</strong></p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ vim /usr/<span class="built_in">local</span>/zeek/share/zeek/site/local.zeek</span><br><span class="line"></span><br><span class="line"><span class="comment"># Uncomment the following line to enable logging of link-layer addresses. Enabling</span></span><br><span class="line"><span class="comment"># this adds the link-layer address for each connection endpoint to the conn.log file.</span></span><br><span class="line"><span class="comment"># @load policy/protocols/conn/mac-logging</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line">@load policy/tuning/json-logs.zeek</span><br></pre></td></tr></table></figure>
-
-<p><strong>Using PF_RING</strong></p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ vim /usr/<span class="built_in">local</span>/zeek/etc/node.cfg</span><br><span class="line"></span><br><span class="line"><span class="comment"># Example ZeekControl node configuration.</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment"># This example has a standalone node ready to go except for possibly changing</span></span><br><span class="line"><span class="comment"># the sniffing interface.</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># This is a complete standalone configuration.  Most likely you will</span></span><br><span class="line"><span class="comment"># only need to change the interface.</span></span><br><span class="line"><span class="comment"># [zeek]</span></span><br><span class="line"><span class="comment"># type=standalone</span></span><br><span class="line"><span class="comment"># host=localhost</span></span><br><span class="line"><span class="comment"># interface=ens33</span></span><br><span class="line"></span><br><span class="line"><span class="comment">## Below is an example clustered configuration. If you use this,</span></span><br><span class="line"><span class="comment">## remove the [zeek] node above.</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#[logger]</span></span><br><span class="line"><span class="comment">#type=logger</span></span><br><span class="line"><span class="comment">#host=localhost</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line">[manager]</span><br><span class="line"><span class="built_in">type</span>=manager</span><br><span class="line">host=localhost</span><br><span class="line"><span class="comment">#</span></span><br><span class="line">[proxy-1]</span><br><span class="line"><span class="built_in">type</span>=proxy</span><br><span class="line">host=localhost</span><br><span class="line"><span class="comment">#</span></span><br><span class="line">[worker-1]</span><br><span class="line"><span class="built_in">type</span>=worker</span><br><span class="line">host=localhost</span><br><span class="line">interface=ens33</span><br><span class="line">lb_method=pf_ring</span><br><span class="line">lb_procs=1</span><br><span class="line">pin_cpus=1</span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment">#[worker-2]</span></span><br><span class="line"><span class="comment">#type=worker</span></span><br><span class="line"><span class="comment">#host=localhost</span></span><br><span class="line"><span class="comment">#interface=eth0</span></span><br></pre></td></tr></table></figure>
-
-<h1 id="Optional-Dependencies"><a href="#Optional-Dependencies" class="headerlink" title="Optional Dependencies"></a>Optional Dependencies</h1><h2 id="PF-RING"><a href="#PF-RING" class="headerlink" title="PF_RING"></a>PF_RING</h2><p><strong>参考:</strong></p>
-<ul>
-<li><strong><a href="https://www.zeek.org/documentation/load-balancing.html" target="_blank" rel="noopener">Installing PF_RING</a></strong></li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ sudo git <span class="built_in">clone</span> https://github.com/ntop/PF_RING.git</span><br><span class="line">$ <span class="built_in">cd</span> PF_RING/kernel</span><br><span class="line">$ make</span><br><span class="line">$ sudo insmod ./pf_ring.ko</span><br><span class="line">$ <span class="built_in">cd</span> ../userland</span><br><span class="line">$ make</span><br></pre></td></tr></table></figure>
-
-<p><strong>pfring</strong></p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ <span class="built_in">cd</span> /usr/src</span><br><span class="line">$ tar xvzf PF_RING-6.2.0.tar.gz</span><br><span class="line">$ <span class="built_in">cd</span> PF_RING-6.2.0/userland/lib</span><br><span class="line">$ ./configure --prefix=/opt/pfring</span><br><span class="line">$ sudo make install</span><br></pre></td></tr></table></figure>
-
-<p><strong>libpcap</strong></p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ <span class="built_in">cd</span> ../libpcap</span><br><span class="line">$ ./configure --prefix=/opt/pfring</span><br><span class="line">$ sudo make install</span><br></pre></td></tr></table></figure>
-
-<p><strong>tcpdump</strong></p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ <span class="built_in">cd</span> ../tcpdump</span><br><span class="line">$ ./configure --prefix=/opt/pfring</span><br><span class="line">$ sudo make install</span><br></pre></td></tr></table></figure>
-
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ <span class="built_in">cd</span> ../../kernel</span><br><span class="line">$ make</span><br><span class="line">$ sudo make install</span><br></pre></td></tr></table></figure>
-
-<p><strong>Load pf_ring at boot</strong></p>
+<p><strong><em>Load pf_ring at boot</em></strong></p>
 <figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ <span class="built_in">echo</span> <span class="string">'pf_ring'</span> &gt;&gt; /etc/modules</span><br><span class="line">$ sudo reboot</span><br><span class="line"></span><br><span class="line">root@ubuntu:~<span class="comment"># lsmod | grep pf_ring</span></span><br><span class="line">pf_ring              1245184  0</span><br></pre></td></tr></table></figure>
 
-<p><em>确保Zeek正确链接到所需的libpcap库:</em></p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">root@ubuntu:/usr/<span class="built_in">local</span>/zeek/etc<span class="comment"># ldd /usr/local/zeek/bin/zeek | grep pcap</span></span><br><span class="line">	libpcap.so.1 =&gt; /opt/pfring/lib/libpcap.so.1 (0x00007fc3c199d000)</span><br></pre></td></tr></table></figure>
-
-<h2 id="GeoLocation"><a href="#GeoLocation" class="headerlink" title="GeoLocation"></a>GeoLocation</h2><p><strong>参考:</strong></p>
+<hr>
+<h5 id="GeoLocation"><a href="#GeoLocation" class="headerlink" title="GeoLocation"></a>GeoLocation</h5><p><strong>参考:</strong></p>
 <ul>
 <li><strong><a href="https://docs.zeek.org/en/stable/frameworks/geoip.html#geolocation" target="_blank" rel="noopener">Installing LibgeoIP</a></strong></li>
 </ul>
 <figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ sudo apt-get install libmaxminddb-dev</span><br><span class="line">$ wget http://geolite.maxmind.com/download/geoip/database/GeoLite2-City.tar.gz</span><br><span class="line">$ tar zxf GeoLite2-City.tar.gz</span><br><span class="line">$ mkdir -p /usr/share/GeoIP</span><br><span class="line">$ mv GeoLite2-City_20190702/GeoLite2-City.mmdb /usr/share/GeoIP/</span><br></pre></td></tr></table></figure>
 
 <p><strong>Testing</strong></p>
-<p><em>如果未找到任何内容或未设置<code>mmdb_dir</code>，则Bro按以下顺序查找位置数据库文件：</em></p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ bro -e <span class="string">"print lookup_location(8.8.8.8);"</span></span><br></pre></td></tr></table></figure>
+<p><em>如果未找到任何内容或未设置<code>mmdb_dir</code>，则<code>Zeek</code>按以下顺序查找位置数据库文件：</em></p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ zeek -e <span class="string">"print lookup_location(8.8.8.8);"</span></span><br></pre></td></tr></table></figure>
 
 <ul>
 <li>/usr/share/GeoIP/GeoLite2-City.mmdb</li>
@@ -824,46 +799,76 @@
 <li>/usr/local/share/GeoIP/GeoLite2-Country.mmdb</li>
 <li>/usr/local/var/GeoIP/GeoLite2-Country.mmdb</li>
 </ul>
-<p><em>如果出现 “Bro was not configured for GeoIP support”, 源码安装时需要指定<code>./configure --with-geoip=/usr/share/GeoIP</code></em></p>
-<h2 id="Gperftools"><a href="#Gperftools" class="headerlink" title="Gperftools"></a>Gperftools</h2><p><strong>参考:</strong></p>
+<p><em>如果出现 “Zeek was not configured for GeoIP support”, 源码安装时需要指定<code>./configure --with-geoip=/usr/share/GeoIP</code></em></p>
+<hr>
+<h5 id="Gperftools"><a href="#Gperftools" class="headerlink" title="Gperftools"></a>Gperftools</h5><p><strong>参考:</strong></p>
 <ul>
 <li><strong><a href="http://pkxpp.github.io/2017/03/30/gperftools%E5%AE%89%E8%A3%85/" target="_blank" rel="noopener">Installing Gperftools</a></strong></li>
 </ul>
 <figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ sudo git <span class="built_in">clone</span> https://github.com/gperftools/gperftools.git</span><br><span class="line">$ sudo apt-get install libunwind-dev autoconf automake libtool</span><br><span class="line">$ ./autogen.sh</span><br><span class="line">$ ./configure</span><br><span class="line">$ make</span><br><span class="line">$ sudo make install</span><br></pre></td></tr></table></figure>
 
-<h2 id="IPsumdump"><a href="#IPsumdump" class="headerlink" title="IPsumdump"></a>IPsumdump</h2><p><strong>参考:</strong></p>
+<hr>
+<h5 id="IPsumdump"><a href="#IPsumdump" class="headerlink" title="IPsumdump"></a>IPsumdump</h5><p><strong>参考:</strong></p>
 <ul>
 <li><a href="http://www.read.seas.harvard.edu/~kohler/ipsumdump/" target="_blank" rel="noopener"><strong>Installing IPsumdump</strong></a></li>
 </ul>
 <figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ curl -O http://www.read.seas.harvard.edu/~kohler/ipsumdump/ipsumdump-1.86.tar.gz</span><br><span class="line">$ tar -xzf ipsumdump-1.86.tar.gz</span><br><span class="line">$ <span class="built_in">cd</span> ipsumdump-1.86</span><br><span class="line">$ ./configure --prefix=/usr/</span><br><span class="line">$ make</span><br><span class="line">$ sudo make install</span><br><span class="line">$ sudo make clean</span><br></pre></td></tr></table></figure>
 
-<h2 id="Krb5"><a href="#Krb5" class="headerlink" title="Krb5"></a>Krb5</h2><p><strong>参考:</strong></p>
+<hr>
+<h5 id="Krb5"><a href="#Krb5" class="headerlink" title="Krb5"></a>Krb5</h5><p><strong>参考:</strong></p>
 <ul>
 <li><strong><a href="http://computing.help.inf.ed.ac.uk/kerberos-ubuntu" target="_blank" rel="noopener">Installing Krb5</a></strong></li>
 </ul>
 <figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ sudo apt-get install krb5-user</span><br></pre></td></tr></table></figure>
 
-<h2 id="Jemalloc"><a href="#Jemalloc" class="headerlink" title="Jemalloc"></a>Jemalloc</h2><p>参考:</p>
+<hr>
+<h5 id="Jemalloc"><a href="#Jemalloc" class="headerlink" title="Jemalloc"></a>Jemalloc</h5><p><strong>参考:</strong></p>
 <ul>
 <li><a href="https://blog.csdn.net/u013224233/article/details/87930772" target="_blank" rel="noopener"><strong>Installing Jemalloc</strong></a></li>
 </ul>
 <figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ sudo git <span class="built_in">clone</span> https://github.com/jemalloc/jemalloc.git</span><br><span class="line">$ ./autogen.sh</span><br><span class="line">$ make -j2</span><br><span class="line">$ sudo make install</span><br><span class="line">$ sudo ldconfig</span><br></pre></td></tr></table></figure>
 
-<h1 id="压测"><a href="#压测" class="headerlink" title="压测"></a>压测</h1><ol>
-<li><strong>查看是否丢包</strong></li>
+<hr>
+<h4 id="Zeek"><a href="#Zeek" class="headerlink" title="Zeek"></a>Zeek</h4><p><strong>Required Dependencies</strong></p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ sudo apt-get install cmake make gcc g++ flex bison libpcap-dev libssl-dev python-dev swig zlib1g-dev</span><br></pre></td></tr></table></figure>
+
+<p><em>If your system uses Python 2.7, then you will also need to install the <code>python-ipaddres</code> package.</em></p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ sudo apt-get install python-ipaddress</span><br></pre></td></tr></table></figure>
+
+<p><strong>参考:</strong></p>
+<ul>
+<li><strong><a href="https://docs.zeek.org/en/stable/install/install.html" target="_blank" rel="noopener">Installing Zeek</a></strong></li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ ./configure --with-pcap=/opt/pfring --with-geoip=/usr/share/GeoIP</span><br><span class="line">$ make</span><br><span class="line">$ sudo make install</span><br></pre></td></tr></table></figure>
+
+<p><strong><em>确保<code>Zeek</code>正确链接到所需的<code>libpcap</code>库:</em></strong></p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ lldd /usr/<span class="built_in">local</span>/zeek/bin/zeek | grep pcap</span><br><span class="line">	libpcap.so.1 =&gt; /opt/pfring/lib/libpcap.so.1 (0x00007fd5b3cfc000)</span><br></pre></td></tr></table></figure>
+
+<h5 id="Add-PATH"><a href="#Add-PATH" class="headerlink" title="Add PATH"></a><strong>Add PATH</strong></h5><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ <span class="built_in">export</span> PATH=/usr/<span class="built_in">local</span>/zeek/bin:<span class="variable">$PATH</span></span><br><span class="line">$ <span class="built_in">source</span> ~/.bashrc</span><br><span class="line"></span><br><span class="line">$ sudo vim ~/.bashrc</span><br><span class="line"><span class="built_in">export</span> PATH=/usr/<span class="built_in">local</span>/zeek/bin:<span class="variable">$PATH</span></span><br></pre></td></tr></table></figure>
+
+<hr>
+<h5 id="Using-PF-RING"><a href="#Using-PF-RING" class="headerlink" title="Using PF_RING"></a><strong>Using PF_RING</strong></h5><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ vim /usr/<span class="built_in">local</span>/zeek/etc/node.cfg</span><br><span class="line"></span><br><span class="line"><span class="comment"># Example ZeekControl node configuration.</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment"># This example has a standalone node ready to go except for possibly changing</span></span><br><span class="line"><span class="comment"># the sniffing interface.</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># This is a complete standalone configuration.  Most likely you will</span></span><br><span class="line"><span class="comment"># only need to change the interface.</span></span><br><span class="line"><span class="comment"># [zeek]</span></span><br><span class="line"><span class="comment"># type=standalone</span></span><br><span class="line"><span class="comment"># host=localhost</span></span><br><span class="line"><span class="comment"># interface=ens33</span></span><br><span class="line"></span><br><span class="line"><span class="comment">## Below is an example clustered configuration. If you use this,</span></span><br><span class="line"><span class="comment">## remove the [zeek] node above.</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#[logger]</span></span><br><span class="line"><span class="comment">#type=logger</span></span><br><span class="line"><span class="comment">#host=localhost</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line">[manager]</span><br><span class="line"><span class="built_in">type</span>=manager</span><br><span class="line">host=localhost</span><br><span class="line"><span class="comment">#</span></span><br><span class="line">[proxy-1]</span><br><span class="line"><span class="built_in">type</span>=proxy</span><br><span class="line">host=localhost</span><br><span class="line"><span class="comment">#</span></span><br><span class="line">[worker-1]</span><br><span class="line"><span class="built_in">type</span>=worker</span><br><span class="line">host=localhost</span><br><span class="line">interface=ens33</span><br><span class="line">lb_method=pf_ring</span><br><span class="line">lb_procs=3</span><br><span class="line">pin_cpus=1,2,3</span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment">#[worker-2]</span></span><br><span class="line"><span class="comment">#type=worker</span></span><br><span class="line"><span class="comment">#host=localhost</span></span><br><span class="line"><span class="comment">#interface=eth0</span></span><br></pre></td></tr></table></figure>
+
+<h5 id="Enable-Json"><a href="#Enable-Json" class="headerlink" title="Enable Json"></a>Enable Json</h5><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ vim /usr/<span class="built_in">local</span>/zeek/share/zeek/site/local.zeek</span><br><span class="line"></span><br><span class="line"><span class="comment"># Uncomment the following line to enable logging of link-layer addresses. Enabling</span></span><br><span class="line"><span class="comment"># this adds the link-layer address for each connection endpoint to the conn.log file.</span></span><br><span class="line"><span class="comment"># @load policy/protocols/conn/mac-logging</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line">@load policy/tuning/json-logs.zeek</span><br></pre></td></tr></table></figure>
+
+<h4 id="压测"><a href="#压测" class="headerlink" title="压测"></a>压测</h4><ol>
+<li><h5 id="查看是否丢包"><a href="#查看是否丢包" class="headerlink" title="查看是否丢包"></a><strong>查看是否丢包</strong></h5></li>
 </ol>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ zeekctl netstats; date</span><br><span class="line"> worker-1-1: 1565971837.137228 recvd=2834922 dropped=0 link=2834922</span><br><span class="line"> worker-1-2: 1565971837.147334 recvd=2550230 dropped=0 link=2550230</span><br><span class="line"> worker-1-3: 1565971837.162362 recvd=5180417 dropped=0 link=5180417</span><br><span class="line"> worker-1-4: 1565971837.170347 recvd=3235356 dropped=0 link=3235356</span><br><span class="line"> worker-1-5: 1565971837.186545 recvd=1916826 dropped=0 link=1916826</span><br><span class="line"> worker-1-6: 1565971837.201416 recvd=2944762 dropped=0 link=2944762</span><br><span class="line"> worker-1-7: 1565971837.214975 recvd=2279448 dropped=0 link=2279448</span><br><span class="line"> worker-1-8: 1565971837.229167 recvd=1896171 dropped=0 link=1896171</span><br><span class="line"> worker-1-9: 1565971837.249430 recvd=2550968 dropped=0 link=2550968</span><br><span class="line">worker-1-10: 1565971837.246513 recvd=3339864 dropped=0 link=3339864</span><br><span class="line">worker-1-11: 1565971837.260010 recvd=3080981 dropped=0 link=3080981</span><br><span class="line">worker-1-12: 1565971837.274447 recvd=2410030 dropped=0 link=2410030</span><br><span class="line">worker-1-13: 1565971837.282654 recvd=2188787 dropped=0 link=2188787</span><br><span class="line">worker-1-14: 1565971837.294684 recvd=3103014 dropped=0 link=3103014</span><br><span class="line">Fri Aug 16 16:10:37 UTC 2019</span><br></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ zeekctl netstats; date</span><br><span class="line"> worker-1-1: 1585999488.317958 recvd=18 dropped=0 link=18</span><br><span class="line"> worker-1-2: 1585999488.335990 recvd=0 dropped=0 link=0</span><br><span class="line"> worker-1-3: 1585999488.345568 recvd=2 dropped=0 link=2</span><br><span class="line">Sat Apr  4 04:24:48 PDT 2020</span><br></pre></td></tr></table></figure>
 
 <ol start="2">
-<li><strong>查看资源占用</strong></li>
+<li><h5 id="查看资源占用"><a href="#查看资源占用" class="headerlink" title="查看资源占用"></a><strong>查看资源占用</strong></h5></li>
 </ol>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ zeekctl top; date</span><br><span class="line">Name         Type    Host             Pid     VSize  Rss  Cpu   Cmd</span><br><span class="line">logger       logger  localhost        8808      1G    99M   5%  zeek</span><br><span class="line">manager      manager localhost        8855    568M    97M  23%  zeek</span><br><span class="line">proxy-1      proxy   localhost        8901    566M    92M   5%  zeek</span><br><span class="line">worker-1-1   worker  localhost        9086      1G   697M  11%  zeek</span><br><span class="line">worker-1-2   worker  localhost        9093      1G   699M  23%  zeek</span><br><span class="line">worker-1-3   worker  localhost        9105      1G   700M  17%  zeek</span><br><span class="line">worker-1-4   worker  localhost        9111      1G   696M  17%  zeek</span><br><span class="line">worker-1-5   worker  localhost        9114      1G   699M  17%  zeek</span><br><span class="line">worker-1-6   worker  localhost        9120      1G   699M  11%  zeek</span><br><span class="line">worker-1-7   worker  localhost        9121      1G   699M  11%  zeek</span><br><span class="line">worker-1-8   worker  localhost        9132      1G   701M  11%  zeek</span><br><span class="line">worker-1-9   worker  localhost        9140      1G   699M  11%  zeek</span><br><span class="line">worker-1-10  worker  localhost        9142      1G   700M  11%  zeek</span><br><span class="line">worker-1-11  worker  localhost        9151      1G   696M  23%  zeek</span><br><span class="line">worker-1-12  worker  localhost        9155      1G   698M  17%  zeek</span><br><span class="line">worker-1-13  worker  localhost        9154      1G   701M  11%  zeek</span><br><span class="line">worker-1-14  worker  localhost        9157      1G   698M  17%  zeek</span><br><span class="line">Fri Aug 16 16:11:25 UTC 2019</span><br></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ zeekctl top; date</span><br><span class="line">Name         Type    Host             Pid     VSize  Rss  Cpu   Cmd</span><br><span class="line">manager      manager localhost        4818      1G    87M   0%  zeek</span><br><span class="line">proxy-1      proxy   localhost        4870    649M    85M   0%  zeek</span><br><span class="line">worker-1-1   worker  localhost        4948    655M    92M   0%  zeek</span><br><span class="line">worker-1-2   worker  localhost        4952    655M    92M   0%  zeek</span><br><span class="line">worker-1-3   worker  localhost        4954    655M    92M   0%  zeek</span><br><span class="line">Sat Apr  4 04:24:52 PDT 2020</span><br></pre></td></tr></table></figure>
 
 <ol start="3">
-<li><strong>查看流量大小(10秒)</strong></li>
+<li><h5 id="查看流量大小-10秒"><a href="#查看流量大小-10秒" class="headerlink" title="查看流量大小(10秒)"></a><strong>查看流量大小(10秒)</strong></h5></li>
 </ol>
 <figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ zeekctl capstats; date</span><br><span class="line">Interface             kpps       mbps       (10s average)</span><br><span class="line">----------------------------------------</span><br><span class="line">localhost/ens5        37.8       375.2</span><br><span class="line">Fri Aug 16 16:12:47 UTC 2019</span><br></pre></td></tr></table></figure>
 
+<h4 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h4><ul>
+<li><a href="https://holdmybeersecurity.com/2019/04/03/part-1-install-setup-zeek-pf_ring-on-ubuntu-18-04-on-proxmox-5-3-openvswitch/" target="_blank" rel="noopener"><strong>PART 1: INSTALL/SETUP ZEEK + PF_RING ON UBUNTU 18.04 ON PROXMOX 5.3 + OPENVSWITCH</strong></a></li>
+</ul>
 ]]></content>
       <categories>
         <category>NIDS</category>

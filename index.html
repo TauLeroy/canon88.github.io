@@ -267,6 +267,100 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/03/29/Elasticsearch-alias与reindex的使用场景/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Canon">
+      <meta itemprop="description" content="一个热爱健身的安全分析师">
+      <meta itemprop="image" content="/images/avatar.jpeg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Canon's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+            
+            <a href="/2020/03/29/Elasticsearch-alias与reindex的使用场景/" class="post-title-link" itemprop="url">Elasticsearch-alias与reindex的使用场景</a>
+          
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              
+                
+              
+
+              <time title="创建时间：2020-03-29 12:39:19" itemprop="dateCreated datePublished" datetime="2020-03-29T12:39:19+08:00">2020-03-29</time>
+            </span>
+          
+            
+
+            
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-04-04 19:17:25" itemprop="dateModified" datetime="2020-04-04T19:17:25+08:00">2020-04-04</time>
+              </span>
+            
+          
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h4 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h4><ul>
+<li><strong><a href="https://javasgl.github.io/elastic-search-reindex/" target="_blank" rel="noopener">使用 reindex 来修改 elasticsearch 索引mapping</a></strong></li>
+<li><strong><a href="https://javasgl.github.io/use-alias-migrate-index/" target="_blank" rel="noopener">使用 Elasticsearch alias 功能切换 index</a></strong></li>
+<li><strong><a href="https://blog.csdn.net/mlljava1111/article/details/51218868" target="_blank" rel="noopener">Elasticsearch更改mapping(不停服务重建索引)</a></strong></li>
+<li><strong><a href="https://www.cnblogs.com/jajian/p/10152681.html" target="_blank" rel="noopener">Elasticsearch 技术分析（三）： 索引别名Aliases问题</a></strong></li>
+<li><strong><a href="https://www.jianshu.com/p/f67b046b4d3f" target="_blank" rel="noopener">Elasticsearch 实战案例（索引切分、模板、别名、数据迁移）</a></strong></li>
+<li><strong><a href="http://abusehub-reindex.py/" target="_blank" rel="noopener">abusehub-reindex.py/</a></strong></li>
+</ul>
+<h4 id="reindex"><a href="#reindex" class="headerlink" title="reindex"></a>reindex</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> elasticsearch <span class="keyword">import</span> Elasticsearch</span><br><span class="line"><span class="keyword">from</span> elasticsearch <span class="keyword">import</span> helpers</span><br><span class="line"></span><br><span class="line">host = [<span class="string">'es_host1'</span>, <span class="string">'es_host2'</span>, <span class="string">'es_host3'</span>]</span><br><span class="line">port = <span class="number">9200</span></span><br><span class="line">timeout = <span class="number">600</span></span><br><span class="line">auth_user = <span class="string">'elastic'</span></span><br><span class="line">auth_password = <span class="string">'hello world'</span></span><br><span class="line">use_ssl = <span class="literal">True</span></span><br><span class="line">ca_certs = <span class="string">'/opt/certs/ca/ca.crt'</span></span><br><span class="line"></span><br><span class="line">es = Elasticsearch(host, port=port, timeout=timeout, http_auth=(auth_user, auth_password), verify_certs=<span class="literal">True</span>, use_ssl=use_ssl, ca_certs=ca_certs)</span><br></pre></td></tr></table></figure>
+
+<h5 id="按照指定日期重建索引"><a href="#按照指定日期重建索引" class="headerlink" title="按照指定日期重建索引"></a>按照指定日期重建索引</h5><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> datetime</span><br><span class="line"><span class="keyword">import</span> time</span><br><span class="line"></span><br><span class="line">begin_date = (datetime.datetime.now() - datetime.timedelta(days = <span class="number">10</span>)).strftime(<span class="string">"%Y.%m.%d"</span>)</span><br><span class="line">begin_date = datetime.datetime.strptime(begin_date, <span class="string">"%Y.%m.%d"</span>)</span><br><span class="line">end_date = (datetime.datetime.now() - datetime.timedelta(days = <span class="number">1</span>)).strftime(<span class="string">"%Y.%m.%d"</span>)</span><br><span class="line">end_date = datetime.datetime.strptime(end_date, <span class="string">"%Y.%m.%d"</span>)</span><br><span class="line"></span><br><span class="line">date_list = []</span><br><span class="line"><span class="keyword">while</span> begin_date &lt;= end_date:</span><br><span class="line">    date_str = begin_date.strftime(<span class="string">"%Y.%m.%d"</span>)</span><br><span class="line">    date_list.append(date_str)</span><br><span class="line">    begin_date += datetime.timedelta(days=<span class="number">1</span>)</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">date_list</span><br><span class="line">[<span class="string">'2020.03.19'</span>,</span><br><span class="line"> <span class="string">'2020.03.20'</span>,</span><br><span class="line"> <span class="string">'2020.03.21'</span>,</span><br><span class="line"> <span class="string">'2020.03.22'</span>,</span><br><span class="line"> <span class="string">'2020.03.23'</span>,</span><br><span class="line"> <span class="string">'2020.03.24'</span>,</span><br><span class="line"> <span class="string">'2020.03.25'</span>,</span><br><span class="line"> <span class="string">'2020.03.26'</span>,</span><br><span class="line"> <span class="string">'2020.03.27'</span>,</span><br><span class="line"> <span class="string">'2020.03.28'</span>]</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">chunk_size = <span class="number">10000</span></span><br><span class="line"><span class="keyword">for</span> day <span class="keyword">in</span> date_list:</span><br><span class="line">    source_index = <span class="string">'wazuh-alerts-3.x-'</span> + day</span><br><span class="line">    target_index = <span class="string">'siem-alerts-'</span> + day</span><br><span class="line">    helpers.reindex(</span><br><span class="line">        client=es, source_index=source_index, target_index=target_index, </span><br><span class="line">        target_client=es, chunk_size=chunk_size</span><br><span class="line">    )</span><br><span class="line">    print(source_index + <span class="string">' -&gt; '</span> + target_index + <span class="string">' fin.'</span>)</span><br></pre></td></tr></table></figure>
+
+
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+          <div class="post-eof"></div>
+        
+      </footer>
+  </article>
+  
+  
+  
+
+    
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/02/25/Wazuh-如何对异构数据进行关联告警/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1514,122 +1608,6 @@
   
 
     
-        
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/10/18/Wazuh-Using-CDB-lists/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Canon">
-      <meta itemprop="description" content="一个热爱健身的安全分析师">
-      <meta itemprop="image" content="/images/avatar.jpeg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Canon's Blog">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-            
-            <a href="/2019/10/18/Wazuh-Using-CDB-lists/" class="post-title-link" itemprop="url">Wazuh - 黑名单匹配告警(CDB list)</a>
-          
-        </h1>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              
-                
-              
-
-              <time title="创建时间：2019-10-18 11:28:56 / 修改时间：15:17:46" itemprop="dateCreated datePublished" datetime="2019-10-18T11:28:56+08:00">2019-10-18</time>
-            </span>
-          
-            
-
-            
-          
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/HIDS/" itemprop="url" rel="index"><span itemprop="name">HIDS</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p><strong>需求:</strong></p>
-<p>​        现有一批高危用户, 需要实时关注该账号的登录情况。由于之前已经写好了一个针对用户登录账号的审计规则, 因此, 这里需要用到<strong><a href="https://documentation.wazuh.com/3.10/user-manual/ruleset/cdb-list.html" target="_blank" rel="noopener">Wazuh CDB list</a></strong>这个功能(<em>此功能主要用例是创建用户，IP或域名的白/黑列表。</em>)消费审计规则数据即可。</p>
-<hr>
-<ol>
-<li><strong>新建列表</strong></li>
-</ol>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$ more blacklist</span><br><span class="line"></span><br><span class="line">admin:</span><br><span class="line">root:</span><br><span class="line">administrator:</span><br></pre></td></tr></table></figure>
-
-<ol start="2">
-<li><strong>将列表文件添加到<code>ossec.conf</code></strong></li>
-</ol>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">$ more ossec.conf</span><br><span class="line"></span><br><span class="line">&lt;ossec_config&gt;</span><br><span class="line">	&lt;ruleset&gt;</span><br><span class="line">    &lt;!-- User-defined CDB list --&gt;</span><br><span class="line">    &lt;list&gt;etc/lists/blacklist&lt;/list&gt;</span><br><span class="line">	&lt;/ruleset&gt;</span><br><span class="line">&lt;/ossec_config&gt;</span><br></pre></td></tr></table></figure>
-
-<ol start="3">
-<li><strong>编译列表</strong></li>
-</ol>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ /var/ossec/bin/ossec-makelists</span><br><span class="line"></span><br><span class="line"> * File etc/lists/blacklist.cdb needs to be updated</span><br></pre></td></tr></table></figure>
-
-<ol start="4">
-<li><strong>重启进程</strong></li>
-</ol>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ sudo systemctl restart wazuh-manager</span><br></pre></td></tr></table></figure>
-
-<ol start="5">
-<li><strong>配置规则</strong></li>
-</ol>
-<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">group</span> <span class="attr">name</span>=<span class="string">"local,blacklist,"</span>&gt;</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">&lt;!-- Defind blacklist Rules --&gt;</span></span><br><span class="line">    <span class="comment">&lt;!-- ID: 100150 - 100199 --&gt;</span></span><br><span class="line"></span><br><span class="line">    <span class="tag">&lt;<span class="name">rule</span> <span class="attr">id</span>=<span class="string">"100163"</span> <span class="attr">level</span>=<span class="string">"12"</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">if_sid</span>&gt;</span>100303<span class="tag">&lt;/<span class="name">if_sid</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">list</span> <span class="attr">field</span>=<span class="string">"http.email"</span> <span class="attr">lookup</span>=<span class="string">"match_key"</span>&gt;</span>etc/lists/blacklist<span class="tag">&lt;/<span class="name">list</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">description</span>&gt;</span>Wazuh Rules - High-risk user login detected. $(src_ip) -&gt; $(http.email) -&gt; $(http.hostname) -&gt; $(http.url) = $(http.results).<span class="tag">&lt;/<span class="name">description</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">options</span>&gt;</span>no_full_log<span class="tag">&lt;/<span class="name">options</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">group</span>&gt;</span>blacklist,<span class="tag">&lt;/<span class="name">group</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">rule</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;/<span class="name">group</span>&gt;</span></span><br></pre></td></tr></table></figure>
-
-<ol start="6">
-<li><strong>测试规则</strong></li>
-</ol>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">$ ./ossec-logtest</span><br><span class="line">2019/10/18 15:06:47 ossec-testrule: INFO: Started (pid: 2184).</span><br><span class="line">ossec-testrule: Type one <span class="built_in">log</span> per line.</span><br><span class="line"></span><br><span class="line">**Phase 3: Completed filtering (rules).</span><br><span class="line">       Rule id: <span class="string">'100163'</span></span><br><span class="line">       Level: <span class="string">'12'</span></span><br><span class="line">       Description: <span class="string">'Wazuh Rules - High-risk user login detected. 1.1.1.1 -&gt; admin -&gt; canon88.github.io -&gt; /user/login = success.'</span></span><br><span class="line">**Alert to be generated.</span><br></pre></td></tr></table></figure>
-
-
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-          <div class="post-eof"></div>
-        
-      </footer>
-  </article>
-  
-  
-  
-
-    
   </div>
 
   
@@ -1682,7 +1660,7 @@
         
           <a href="/archives/">
         
-          <span class="site-state-item-count">16</span>
+          <span class="site-state-item-count">17</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -1708,7 +1686,7 @@
             <a href="/tags/">
           
         
-        <span class="site-state-item-count">7</span>
+        <span class="site-state-item-count">8</span>
         <span class="site-state-item-name">标签</span>
         </a>
       </div>

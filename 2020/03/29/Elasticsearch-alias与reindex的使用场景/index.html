@@ -55,19 +55,19 @@
   };
 </script>
 
-  <meta name="description" content="需求​        目前平台接入了Suricata的告警规则, 由于镜像源的关系部分规则产生了‘误’告警, 因此需要针对这部分规则进行IP地址的过滤。 解决方法 修改Suricata的规则, 如果你的‘误’告警量很大且为了性能考虑, 推荐直接修改Suricata的规则。 由于我这边的Suricata告警都是利用Wazuh进行‘消费’的。因此, 我这边直接采用了Wazuh CDB list这个功能">
-<meta name="keywords" content="Wazuh">
+  <meta name="description" content="参考 使用 reindex 来修改 elasticsearch 索引mapping 使用 Elasticsearch alias 功能切换 index Elasticsearch更改mapping(不停服务重建索引) Elasticsearch 技术分析（三）： 索引别名Aliases问题 Elasticsearch 实战案例（索引切分、模板、别名、数据迁移） abusehub-reindex.p">
+<meta name="keywords" content="ElasticSearch">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Wazuh - 利用CDB list过滤私网IP地址">
-<meta property="og:url" content="http://yoursite.com/2020/01/31/Wazuh-利用CDB-list过滤私网IP地址/index.html">
+<meta property="og:title" content="Elasticsearch-alias与reindex的使用场景">
+<meta property="og:url" content="http://yoursite.com/2020/03/29/Elasticsearch-alias与reindex的使用场景/index.html">
 <meta property="og:site_name" content="Canon&#39;s Blog">
-<meta property="og:description" content="需求​        目前平台接入了Suricata的告警规则, 由于镜像源的关系部分规则产生了‘误’告警, 因此需要针对这部分规则进行IP地址的过滤。 解决方法 修改Suricata的规则, 如果你的‘误’告警量很大且为了性能考虑, 推荐直接修改Suricata的规则。 由于我这边的Suricata告警都是利用Wazuh进行‘消费’的。因此, 我这边直接采用了Wazuh CDB list这个功能">
+<meta property="og:description" content="参考 使用 reindex 来修改 elasticsearch 索引mapping 使用 Elasticsearch alias 功能切换 index Elasticsearch更改mapping(不停服务重建索引) Elasticsearch 技术分析（三）： 索引别名Aliases问题 Elasticsearch 实战案例（索引切分、模板、别名、数据迁移） abusehub-reindex.p">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2020-02-02T14:15:14.614Z">
+<meta property="og:updated_time" content="2020-04-04T11:17:25.264Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Wazuh - 利用CDB list过滤私网IP地址">
-<meta name="twitter:description" content="需求​        目前平台接入了Suricata的告警规则, 由于镜像源的关系部分规则产生了‘误’告警, 因此需要针对这部分规则进行IP地址的过滤。 解决方法 修改Suricata的规则, 如果你的‘误’告警量很大且为了性能考虑, 推荐直接修改Suricata的规则。 由于我这边的Suricata告警都是利用Wazuh进行‘消费’的。因此, 我这边直接采用了Wazuh CDB list这个功能">
-  <link rel="canonical" href="http://yoursite.com/2020/01/31/Wazuh-利用CDB-list过滤私网IP地址/">
+<meta name="twitter:title" content="Elasticsearch-alias与reindex的使用场景">
+<meta name="twitter:description" content="参考 使用 reindex 来修改 elasticsearch 索引mapping 使用 Elasticsearch alias 功能切换 index Elasticsearch更改mapping(不停服务重建索引) Elasticsearch 技术分析（三）： 索引别名Aliases问题 Elasticsearch 实战案例（索引切分、模板、别名、数据迁移） abusehub-reindex.p">
+  <link rel="canonical" href="http://yoursite.com/2020/03/29/Elasticsearch-alias与reindex的使用场景/">
 
 
 <script id="page-configurations">
@@ -94,7 +94,7 @@
   padding: 1px 4px;
 }
 </style>
-  <title>Wazuh - 利用CDB list过滤私网IP地址 | Canon's Blog</title>
+  <title>Elasticsearch-alias与reindex的使用场景 | Canon's Blog</title>
   
 
 
@@ -269,7 +269,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/01/31/Wazuh-利用CDB-list过滤私网IP地址/">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/03/29/Elasticsearch-alias与reindex的使用场景/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="Canon">
@@ -281,7 +281,7 @@
       <meta itemprop="name" content="Canon's Blog">
     </span>
       <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">Wazuh - 利用CDB list过滤私网IP地址
+        <h1 class="post-title" itemprop="name headline">Elasticsearch-alias与reindex的使用场景
 
           
         </h1>
@@ -297,7 +297,7 @@
                 
               
 
-              <time title="创建时间：2020-01-31 13:35:08" itemprop="dateCreated datePublished" datetime="2020-01-31T13:35:08+08:00">2020-01-31</time>
+              <time title="创建时间：2020-03-29 12:39:19" itemprop="dateCreated datePublished" datetime="2020-03-29T12:39:19+08:00">2020-03-29</time>
             </span>
           
             
@@ -308,22 +308,9 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-02-02 22:15:14" itemprop="dateModified" datetime="2020-02-02T22:15:14+08:00">2020-02-02</time>
+                <time title="修改时间：2020-04-04 19:17:25" itemprop="dateModified" datetime="2020-04-04T19:17:25+08:00">2020-04-04</time>
               </span>
             
-          
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/HIDS/" itemprop="url" rel="index"><span itemprop="name">HIDS</span></a></span>
-
-                
-                
-              
-            </span>
           
 
           
@@ -337,61 +324,22 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <h4 id="需求"><a href="#需求" class="headerlink" title="需求"></a>需求</h4><p>​        目前平台接入了<strong>Suricata</strong>的告警规则, 由于镜像源的关系部分规则产生了<strong>‘误’</strong>告警, 因此需要针对这部分规则进行IP地址的过滤。</p>
-<h4 id="解决方法"><a href="#解决方法" class="headerlink" title="解决方法"></a>解决方法</h4><ol>
-<li>修改Suricata的规则, 如果你的<strong>‘误’</strong>告警量很大且为了性能考虑, 推荐直接修改Suricata的规则。</li>
-<li>由于我这边的Suricata告警都是利用Wazuh进行<strong>‘消费’</strong>的。因此, 我这边直接采用了<strong><a href="https://documentation.wazuh.com/3.10/user-manual/ruleset/cdb-list.html" target="_blank" rel="noopener">Wazuh CDB list</a></strong>这个功能进行指定IP地址的过滤。</li>
-</ol>
-<h4 id="步骤"><a href="#步骤" class="headerlink" title="步骤"></a>步骤</h4><h5 id="1-创建-CDB-list"><a href="#1-创建-CDB-list" class="headerlink" title="1. 创建 CDB list"></a>1. 创建 CDB list</h5><blockquote>
-<p>Each key must be unique and is terminated with a colon <code>:</code>.</p>
-<p>For IP addresses the dot notation is used for subnet matches:</p>
-</blockquote>
-<table>
-<thead>
-<tr>
-<th>key</th>
-<th>CIDR</th>
-<th>Possible matches</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>192.168.:</td>
-<td>192.168.0.0/16</td>
-<td>192.168.0.0 - 192.168.255.255</td>
-</tr>
-<tr>
-<td>172.16.19.:</td>
-<td>172.16.19.0/24</td>
-<td>172.16.19.0 - 172.16.19.255</td>
-</tr>
-<tr>
-<td>10.1.1.1:</td>
-<td>10.1.1.1/32</td>
-<td>10.1.1.1</td>
-</tr>
-</tbody></table>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ vim /var/ossec/etc/lists/private_ip</span><br><span class="line"></span><br><span class="line">10.168.:PrivateNet</span><br></pre></td></tr></table></figure>
-
-<blockquote>
-<p>Since Wazuh v3.11.3, CDB lists are built and loaded automatically when the analysis engine is started. Therefore, when adding or modifying CDB lists, it is no longer needed to run <code>ossec-makelists</code>, just restart the manager.</p>
-</blockquote>
-<p>从Wazuh v3.11.3开始，将在启动分析引擎时自动构建和加载CDB列表。因此，添加或修改CDB列表时，不再需要运行ossec-makelists，只需重新启动管理器即可。</p>
-<blockquote>
-<p><strong>3.11.3 之前版本需要执行</strong></p>
-</blockquote>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ /var/ossec/bin/ossec-makelists</span><br></pre></td></tr></table></figure>
-
-<h5 id="2-在-ossec-conf-中添加-list"><a href="#2-在-ossec-conf-中添加-list" class="headerlink" title="2. 在 ossec.conf 中添加 list"></a>2. 在 ossec.conf 中添加 list</h5><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">$ vim /var/ossec/etc/ossec.conf</span><br><span class="line"></span><br><span class="line">&lt;ossec_config&gt;</span><br><span class="line">  &lt;ruleset&gt;</span><br><span class="line">    &lt;!-- User-defined CDB --&gt;</span><br><span class="line">    &lt;list&gt;etc/lists/private_ip&lt;/list&gt;</span><br><span class="line">  &lt;/ruleset&gt;</span><br><span class="line">&lt;/ossec_config&gt;</span><br></pre></td></tr></table></figure>
-
-<h5 id="3-重启进程"><a href="#3-重启进程" class="headerlink" title="3. 重启进程"></a>3. 重启进程</h5><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ systemctl restart wazuh-manager</span><br></pre></td></tr></table></figure>
-
-<h5 id="4-配置规则"><a href="#4-配置规则" class="headerlink" title="4. 配置规则"></a>4. 配置规则</h5><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">&lt;var name=<span class="string">"SAME_IP_TIME"</span>&gt;120&lt;/var&gt;</span><br><span class="line">&lt;var name=<span class="string">"SAME_IP_IGORE"</span>&gt;300&lt;/var&gt;</span><br><span class="line"></span><br><span class="line">&lt;group name=<span class="string">"local,suricata,ids,"</span>&gt;</span><br><span class="line"></span><br><span class="line">    &lt;rule id=<span class="string">"102018"</span> level=<span class="string">"8"</span> frequency=<span class="string">"5"</span> timeframe=<span class="string">"<span class="variable">$SAME_IP_TIME</span>"</span> ignore=<span class="string">"<span class="variable">$SAME_IP_IGORE</span>"</span>&gt;</span><br><span class="line">      &lt;if_matched_sid&gt;86601&lt;/if_matched_sid&gt;</span><br><span class="line">      &lt;field name=<span class="string">"alert.signature_id"</span>&gt;2013057&lt;/field&gt;</span><br><span class="line">      &lt;list field=<span class="string">"src_ip"</span> lookup=<span class="string">"not_address_match_key"</span>&gt;etc/lists/private_ip&lt;/list&gt;</span><br><span class="line">      &lt;description&gt;Wazuh Rules - Same ip of attack occurred 5 <span class="built_in">times</span> within <span class="variable">$SAME_IP_TIME</span> seconds. $(src_ip) -&gt; $(alert.signature) -&gt; $(alert.signature_id).&lt;/description&gt;</span><br><span class="line">      &lt;options&gt;no_full_log&lt;/options&gt;</span><br><span class="line">    &lt;/rule&gt;</span><br><span class="line"></span><br><span class="line">&lt;/group&gt;</span><br></pre></td></tr></table></figure>
-
-<h5 id="5-测试规则"><a href="#5-测试规则" class="headerlink" title="5. 测试规则"></a>5. 测试规则</h5><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ /var/ossec/bin/ossec-logtest</span><br></pre></td></tr></table></figure>
-
-<h4 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h4><ul>
-<li><strong><a href="https://documentation.wazuh.com/3.11/user-manual/ruleset/cdb-list.html?highlight=match_key" target="_blank" rel="noopener">Using CDB lists</a></strong></li>
+        <h4 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h4><ul>
+<li><strong><a href="https://javasgl.github.io/elastic-search-reindex/" target="_blank" rel="noopener">使用 reindex 来修改 elasticsearch 索引mapping</a></strong></li>
+<li><strong><a href="https://javasgl.github.io/use-alias-migrate-index/" target="_blank" rel="noopener">使用 Elasticsearch alias 功能切换 index</a></strong></li>
+<li><strong><a href="https://blog.csdn.net/mlljava1111/article/details/51218868" target="_blank" rel="noopener">Elasticsearch更改mapping(不停服务重建索引)</a></strong></li>
+<li><strong><a href="https://www.cnblogs.com/jajian/p/10152681.html" target="_blank" rel="noopener">Elasticsearch 技术分析（三）： 索引别名Aliases问题</a></strong></li>
+<li><strong><a href="https://www.jianshu.com/p/f67b046b4d3f" target="_blank" rel="noopener">Elasticsearch 实战案例（索引切分、模板、别名、数据迁移）</a></strong></li>
+<li><strong><a href="http://abusehub-reindex.py/" target="_blank" rel="noopener">abusehub-reindex.py/</a></strong></li>
 </ul>
+<h4 id="reindex"><a href="#reindex" class="headerlink" title="reindex"></a>reindex</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> elasticsearch <span class="keyword">import</span> Elasticsearch</span><br><span class="line"><span class="keyword">from</span> elasticsearch <span class="keyword">import</span> helpers</span><br><span class="line"></span><br><span class="line">host = [<span class="string">'es_host1'</span>, <span class="string">'es_host2'</span>, <span class="string">'es_host3'</span>]</span><br><span class="line">port = <span class="number">9200</span></span><br><span class="line">timeout = <span class="number">600</span></span><br><span class="line">auth_user = <span class="string">'elastic'</span></span><br><span class="line">auth_password = <span class="string">'hello world'</span></span><br><span class="line">use_ssl = <span class="literal">True</span></span><br><span class="line">ca_certs = <span class="string">'/opt/certs/ca/ca.crt'</span></span><br><span class="line"></span><br><span class="line">es = Elasticsearch(host, port=port, timeout=timeout, http_auth=(auth_user, auth_password), verify_certs=<span class="literal">True</span>, use_ssl=use_ssl, ca_certs=ca_certs)</span><br></pre></td></tr></table></figure>
+
+<h5 id="按照指定日期重建索引"><a href="#按照指定日期重建索引" class="headerlink" title="按照指定日期重建索引"></a>按照指定日期重建索引</h5><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> datetime</span><br><span class="line"><span class="keyword">import</span> time</span><br><span class="line"></span><br><span class="line">begin_date = (datetime.datetime.now() - datetime.timedelta(days = <span class="number">10</span>)).strftime(<span class="string">"%Y.%m.%d"</span>)</span><br><span class="line">begin_date = datetime.datetime.strptime(begin_date, <span class="string">"%Y.%m.%d"</span>)</span><br><span class="line">end_date = (datetime.datetime.now() - datetime.timedelta(days = <span class="number">1</span>)).strftime(<span class="string">"%Y.%m.%d"</span>)</span><br><span class="line">end_date = datetime.datetime.strptime(end_date, <span class="string">"%Y.%m.%d"</span>)</span><br><span class="line"></span><br><span class="line">date_list = []</span><br><span class="line"><span class="keyword">while</span> begin_date &lt;= end_date:</span><br><span class="line">    date_str = begin_date.strftime(<span class="string">"%Y.%m.%d"</span>)</span><br><span class="line">    date_list.append(date_str)</span><br><span class="line">    begin_date += datetime.timedelta(days=<span class="number">1</span>)</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">date_list</span><br><span class="line">[<span class="string">'2020.03.19'</span>,</span><br><span class="line"> <span class="string">'2020.03.20'</span>,</span><br><span class="line"> <span class="string">'2020.03.21'</span>,</span><br><span class="line"> <span class="string">'2020.03.22'</span>,</span><br><span class="line"> <span class="string">'2020.03.23'</span>,</span><br><span class="line"> <span class="string">'2020.03.24'</span>,</span><br><span class="line"> <span class="string">'2020.03.25'</span>,</span><br><span class="line"> <span class="string">'2020.03.26'</span>,</span><br><span class="line"> <span class="string">'2020.03.27'</span>,</span><br><span class="line"> <span class="string">'2020.03.28'</span>]</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">chunk_size = <span class="number">10000</span></span><br><span class="line"><span class="keyword">for</span> day <span class="keyword">in</span> date_list:</span><br><span class="line">    source_index = <span class="string">'wazuh-alerts-3.x-'</span> + day</span><br><span class="line">    target_index = <span class="string">'siem-alerts-'</span> + day</span><br><span class="line">    helpers.reindex(</span><br><span class="line">        client=es, source_index=source_index, target_index=target_index, </span><br><span class="line">        target_client=es, chunk_size=chunk_size</span><br><span class="line">    )</span><br><span class="line">    print(source_index + <span class="string">' -&gt; '</span> + target_index + <span class="string">' fin.'</span>)</span><br></pre></td></tr></table></figure>
+
 
     </div>
 
@@ -436,7 +384,7 @@
           
           <div class="post-tags">
             
-              <a href="/tags/Wazuh/" rel="tag"># Wazuh</a>
+              <a href="/tags/ElasticSearch/" rel="tag"># ElasticSearch</a>
             
           </div>
         
@@ -446,8 +394,8 @@
           <div class="post-nav">
             <div class="post-nav-next post-nav-item">
               
-                <a href="/2019/12/30/Logstash-Event-API/" rel="next" title="Logstash Event API">
-                  <i class="fa fa-chevron-left"></i> Logstash Event API
+                <a href="/2020/02/25/Wazuh-如何对异构数据进行关联告警/" rel="next" title="Wazuh - 如何对异构数据进行关联告警">
+                  <i class="fa fa-chevron-left"></i> Wazuh - 如何对异构数据进行关联告警
                 </a>
               
             </div>
@@ -455,10 +403,6 @@
             <span class="post-nav-divider"></span>
 
             <div class="post-nav-prev post-nav-item">
-              
-                <a href="/2020/02/25/Wazuh-如何对异构数据进行关联告警/" rel="prev" title="Wazuh - 如何对异构数据进行关联告警">
-                  Wazuh - 如何对异构数据进行关联告警 <i class="fa fa-chevron-right"></i>
-                </a>
               
             </div>
           </div>
@@ -504,7 +448,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#需求"><span class="nav-number">1.</span> <span class="nav-text">需求</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#解决方法"><span class="nav-number">2.</span> <span class="nav-text">解决方法</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#步骤"><span class="nav-number">3.</span> <span class="nav-text">步骤</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#1-创建-CDB-list"><span class="nav-number">3.1.</span> <span class="nav-text">1. 创建 CDB list</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2-在-ossec-conf-中添加-list"><span class="nav-number">3.2.</span> <span class="nav-text">2. 在 ossec.conf 中添加 list</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#3-重启进程"><span class="nav-number">3.3.</span> <span class="nav-text">3. 重启进程</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#4-配置规则"><span class="nav-number">3.4.</span> <span class="nav-text">4. 配置规则</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#5-测试规则"><span class="nav-number">3.5.</span> <span class="nav-text">5. 测试规则</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#参考"><span class="nav-number">4.</span> <span class="nav-text">参考</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#参考"><span class="nav-number">1.</span> <span class="nav-text">参考</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#reindex"><span class="nav-number">2.</span> <span class="nav-text">reindex</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#按照指定日期重建索引"><span class="nav-number">2.1.</span> <span class="nav-text">按照指定日期重建索引</span></a></li></ol></li></ol></div>
         
       </div>
       <!--/noindex-->
