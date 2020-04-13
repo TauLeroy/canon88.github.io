@@ -839,10 +839,10 @@
 <ul>
 <li><strong><a href="https://docs.zeek.org/en/stable/install/install.html" target="_blank" rel="noopener">Installing Zeek</a></strong></li>
 </ul>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ ./configure --with-pcap=/opt/pfring --with-geoip=/usr/share/GeoIP</span><br><span class="line">$ make</span><br><span class="line">$ sudo make install</span><br></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ git <span class="built_in">clone</span> --recursive https://github.com/zeek/zeek</span><br><span class="line">$ ./configure --with-pcap=/opt/pfring --with-geoip=/usr/share/GeoIP</span><br><span class="line">$ make</span><br><span class="line">$ sudo make install</span><br></pre></td></tr></table></figure>
 
 <p><strong><em>确保<code>Zeek</code>正确链接到所需的<code>libpcap</code>库:</em></strong></p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ lldd /usr/<span class="built_in">local</span>/zeek/bin/zeek | grep pcap</span><br><span class="line">	libpcap.so.1 =&gt; /opt/pfring/lib/libpcap.so.1 (0x00007fd5b3cfc000)</span><br></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ ldd /usr/<span class="built_in">local</span>/zeek/bin/zeek | grep pcap</span><br><span class="line">	libpcap.so.1 =&gt; /opt/pfring/lib/libpcap.so.1 (0x00007fd5b3cfc000)</span><br></pre></td></tr></table></figure>
 
 <h5 id="Add-PATH"><a href="#Add-PATH" class="headerlink" title="Add PATH"></a><strong>Add PATH</strong></h5><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ <span class="built_in">export</span> PATH=/usr/<span class="built_in">local</span>/zeek/bin:<span class="variable">$PATH</span></span><br><span class="line">$ <span class="built_in">source</span> ~/.bashrc</span><br><span class="line"></span><br><span class="line">$ sudo vim ~/.bashrc</span><br><span class="line"><span class="built_in">export</span> PATH=/usr/<span class="built_in">local</span>/zeek/bin:<span class="variable">$PATH</span></span><br></pre></td></tr></table></figure>
 
