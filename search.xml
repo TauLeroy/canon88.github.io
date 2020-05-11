@@ -4,10 +4,10 @@
     <title>Zeek - 高度定制化的 DNS事件 + 文件还原</title>
     <url>/2020/05/11/Zeek%E5%AE%9E%E6%88%98-1/</url>
     <content><![CDATA[<h4 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h4><ol>
-<li>本地环境中部署了2台NTA（<strong>Suricata</strong>）用于接收内网12台DNS服务器的流量，用于发现DNS请求中存在的安全问题。近一段时间发现2台NTA服务器运行10小时左右就会自动重启<strong>Suricata</strong>进程，看了一下日志大概意思是说内存不足，需要强制重启释放内存。说起这个问题当时也是花了一些时间去定位。首先DNS这种小包在我这平均流量也就25Mbps，所以大概率不是因为网卡流量过大而导致的。继续定位，由于我们这各个应用服务器会通过内网域名的形式进行接口调用，所以DNS请求量很大。<strong>Kibana</strong>上看了一下目前<code>dns_type: query</code>事件的数据量<strong>320,000,000/天 ~ 350,000,000/天</strong>（这仅仅是<code>dns_type: query</code>数据量，<code>dns_type: answer</code>数据量<strong>也超级大</strong>）。由于<strong>Suricata</strong>不能在数据输出之前对指定域名进行过滤，这一点确实<strong>很傻</strong>，<strong>必须吐槽</strong>。当时的规避做法就是只保留<code>dns_type: query</code>事件，既保证了<strong>Suricata</strong>的正常运行也暂时满足了需求。</li>
+<li>本地环境中部署了2台NTA（<strong>Suricata</strong>）接收内网12台DNS服务器的流量，用于发现DNS请求中存在的安全问题。近一段时间发现2台NTA服务器运行10小时左右就会自动重启<strong>Suricata</strong>进程，看了一下日志大概意思是说内存不足，需要强制重启释放内存。说起这个问题当时也是花了一些时间去定位。首先DNS这种小包在我这平均流量也就25Mbps，所以大概率不是因为网卡流量过大而导致的。继续定位，由于我们这各个应用服务器会通过内网域名的形式进行接口调用，所以DNS请求量很大。<strong>Kibana</strong>上看了一下目前<code>dns_type: query</code>事件的数据量<strong>320,000,000/天 ~ 350,000,000/天</strong>（这仅仅是<code>dns_type: query</code>数据量，<code>dns_type: answer</code>数据量<strong>也超级大</strong>）。由于<strong>Suricata</strong>不能在数据输出之前对指定域名进行过滤，这一点确实<strong>很傻</strong>，<strong>必须吐槽</strong>。当时的规避做法就是只保留<code>dns_type: query</code>事件，既保证了<strong>Suricata</strong>的正常运行也暂时满足了需求。</li>
 </ol>
 <ol start="2">
-<li>近一段时间网站的某个上传接口被上传了包含<strong>Payload</strong>的jpg与png，虽然Suricata有检测到。但也延伸了新的需求，文件还原以及提取<strong>HASH</strong>。虽然这两点<strong>Suricata</strong>自身都可以做，但是有一个弊端不得不说。例如<strong>Suricata</strong>只要开启<code>file_info</code>就会对所有支持文件还原的协议进行<strong>HASH</strong>提取。由于我们是电商，外部访问的数据量会很大，<strong>Suricata</strong>默认不支持过滤，针对用户访问的HTML网页这种也会被计算一个<strong>HASH</strong>，这个量就非常的<strong>恐怖</strong>了。</li>
+<li>近一段时间网站的某个上传接口被上传了包含<strong>恶意Payload</strong>的jpg与png。虽然<strong>Suricata</strong>有检测到，但也延伸了新的需求，如何判断文件是否上传成功以及文件还原与提取<strong>HASH</strong>。虽然这两点<strong>Suricata</strong>自身都可以做，但是有一个弊端不得不说。例如<strong>Suricata</strong>只要开启<code>file_info</code>就会对所有支持文件还原的协议进行<strong>HASH</strong>提取。由于我们是电商，外部访问的数据量会很大，<strong>Suricata</strong>默认不支持过滤，针对用户访问的HTML网页这种也会被计算一个<strong>HASH</strong>，这个量就非常的<strong>恐怖</strong>了。</li>
 </ol>
 <p><strong>总结：</strong>针对以上2个问题，我需要的是一个更加灵活的输出方式，所以请来了本次的主角<strong>Zeek</strong>。也算与<strong>Suricata</strong>进行功能的互补。</p>
 <hr>
