@@ -58,7 +58,7 @@
   <meta name="description" content="背景 本地环境中部署了2台NTA（Suricata）用于接收内网12台DNS服务器的流量，用于发现DNS请求中存在的安全问题。近一段时间发现2台NTA服务器运行10小时左右就会自动重启Suricata进程，看了一下日志大概意思是说内存不足，需要强制重启释放内存。说起这个问题当时也是花了一些时间去定位。首先DNS这种小包在我这平均流量也就25Mbps，所以大概率不是因为网卡流量过大而导致的。继续定位">
 <meta name="keywords" content="Zeek,NTA">
 <meta property="og:type" content="article">
-<meta property="og:title" content="利用Zeek进行定制化的DNS解析以及文件还原">
+<meta property="og:title" content="Zeek - 高度定制化的 DNS事件 + 文件还原">
 <meta property="og:url" content="http://yoursite.com/2020/05/11/Zeek实战-1/index.html">
 <meta property="og:site_name" content="Canon&#39;s Blog">
 <meta property="og:description" content="背景 本地环境中部署了2台NTA（Suricata）用于接收内网12台DNS服务器的流量，用于发现DNS请求中存在的安全问题。近一段时间发现2台NTA服务器运行10小时左右就会自动重启Suricata进程，看了一下日志大概意思是说内存不足，需要强制重启释放内存。说起这个问题当时也是花了一些时间去定位。首先DNS这种小包在我这平均流量也就25Mbps，所以大概率不是因为网卡流量过大而导致的。继续定位">
@@ -67,9 +67,9 @@
 <meta property="og:image" content="http://yoursite.com/2020/05/11/Zeek实战-1/Suricata-DNS-1.png">
 <meta property="og:image" content="http://yoursite.com/2020/05/11/Zeek实战-1/canon/Documents/Blog/source/_posts/Zeek%E5%AE%9E%E6%88%98-1/Payload-pic.png">
 <meta property="og:image" content="http://yoursite.com/2020/05/11/Zeek实战-1/Wazuh-Hash-1.png">
-<meta property="og:updated_time" content="2020-05-11T07:10:56.093Z">
+<meta property="og:updated_time" content="2020-05-11T07:13:01.685Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="利用Zeek进行定制化的DNS解析以及文件还原">
+<meta name="twitter:title" content="Zeek - 高度定制化的 DNS事件 + 文件还原">
 <meta name="twitter:description" content="背景 本地环境中部署了2台NTA（Suricata）用于接收内网12台DNS服务器的流量，用于发现DNS请求中存在的安全问题。近一段时间发现2台NTA服务器运行10小时左右就会自动重启Suricata进程，看了一下日志大概意思是说内存不足，需要强制重启释放内存。说起这个问题当时也是花了一些时间去定位。首先DNS这种小包在我这平均流量也就25Mbps，所以大概率不是因为网卡流量过大而导致的。继续定位">
 <meta name="twitter:image" content="http://yoursite.com/2020/05/11/Zeek实战-1/Zeek-DNS-1.png">
   <link rel="canonical" href="http://yoursite.com/2020/05/11/Zeek实战-1/">
@@ -99,7 +99,7 @@
   padding: 1px 4px;
 }
 </style>
-  <title>利用Zeek进行定制化的DNS解析以及文件还原 | Canon's Blog</title>
+  <title>Zeek - 高度定制化的 DNS事件 + 文件还原 | Canon's Blog</title>
   
 
 
@@ -286,7 +286,7 @@
       <meta itemprop="name" content="Canon's Blog">
     </span>
       <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">利用Zeek进行定制化的DNS解析以及文件还原
+        <h1 class="post-title" itemprop="name headline">Zeek - 高度定制化的 DNS事件 + 文件还原
 
           
         </h1>
@@ -302,7 +302,7 @@
                 
               
 
-              <time title="创建时间：2020-05-11 09:39:32 / 修改时间：15:10:56" itemprop="dateCreated datePublished" datetime="2020-05-11T09:39:32+08:00">2020-05-11</time>
+              <time title="创建时间：2020-05-11 09:39:32 / 修改时间：15:13:01" itemprop="dateCreated datePublished" datetime="2020-05-11T09:39:32+08:00">2020-05-11</time>
             </span>
           
             
