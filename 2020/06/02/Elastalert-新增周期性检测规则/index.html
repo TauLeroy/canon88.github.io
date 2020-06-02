@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+
+
+
+
+
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 3.9.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.4.1">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.4.1">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.4.1">
+  <link rel="mask-icon" href="/images/logo.svg?v=7.4.1" color="#222">
+
+<link rel="stylesheet" href="/css/main.css?v=7.4.1">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.7.0">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '7.4.1',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    translation: {
+      copy_button: '复制',
+      copy_success: '复制成功',
+      copy_failure: '复制失败'
+    },
+    sidebarPadding: 40
+  };
+</script>
+
+  <meta name="description" content="背景​        由于AWS流量镜像的特殊性，现阶段生产网的架构中只接入了HTTP与DNS流量，分别采用了Zeek与Suricata对现有流量进行分析与预警。Suricata负责基于签名的特征检测，Zeek负责定制化事件的脚本检测，也算是“各司其职”。近几日，某个业务接口出现了Pindom告警，经过分析发现部分IP尝试对该接口的参数进行遍历。由于遍历参数对应的值设置的都比较大，且后台并未对该参">
+<meta name="keywords" content="ElasticSearch,Elastalert">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Elastalert - 新增 参数遍历、周期性检测模型">
+<meta property="og:url" content="http://yoursite.com/2020/06/02/Elastalert-新增周期性检测规则/index.html">
+<meta property="og:site_name" content="Canon&#39;s Blog">
+<meta property="og:description" content="背景​        由于AWS流量镜像的特殊性，现阶段生产网的架构中只接入了HTTP与DNS流量，分别采用了Zeek与Suricata对现有流量进行分析与预警。Suricata负责基于签名的特征检测，Zeek负责定制化事件的脚本检测，也算是“各司其职”。近几日，某个业务接口出现了Pindom告警，经过分析发现部分IP尝试对该接口的参数进行遍历。由于遍历参数对应的值设置的都比较大，且后台并未对该参">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://yoursite.com/2020/06/02/Elastalert-新增周期性检测规则/%E5%BC%82%E5%B8%B8%E8%AE%BF%E9%97%AE%E6%88%AA%E5%9B%BE-1.png">
+<meta property="og:updated_time" content="2020-06-02T03:47:28.995Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Elastalert - 新增 参数遍历、周期性检测模型">
+<meta name="twitter:description" content="背景​        由于AWS流量镜像的特殊性，现阶段生产网的架构中只接入了HTTP与DNS流量，分别采用了Zeek与Suricata对现有流量进行分析与预警。Suricata负责基于签名的特征检测，Zeek负责定制化事件的脚本检测，也算是“各司其职”。近几日，某个业务接口出现了Pindom告警，经过分析发现部分IP尝试对该接口的参数进行遍历。由于遍历参数对应的值设置的都比较大，且后台并未对该参">
+<meta name="twitter:image" content="http://yoursite.com/2020/06/02/Elastalert-新增周期性检测规则/%E5%BC%82%E5%B8%B8%E8%AE%BF%E9%97%AE%E6%88%AA%E5%9B%BE-1.png">
+  <link rel="canonical" href="http://yoursite.com/2020/06/02/Elastalert-新增周期性检测规则/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+<link rel="stylesheet" href="//cdn.jsdelivr.net/gh/theme-next/theme-next-needmoreshare2@1/needsharebutton.min.css"><style>
+#needsharebutton-postbottom {
+  cursor: pointer;
+  height: 26px;
+  margin-top: 10px;
+  position: relative;
+}
+#needsharebutton-postbottom .btn {
+  border: 1px solid $btn-default-border-color;
+  border-radius: 3px;
+  display: initial;
+  padding: 1px 4px;
+}
+</style>
+  <title>Elastalert - 新增 参数遍历、周期性检测模型 | Canon's Blog</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Canon's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+      
+      
+      
+        
+        <li class="menu-item menu-item-home">
+      
+    
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-about">
+      
+    
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-tags">
+      
+    
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-categories">
+      
+    
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-archives">
+      
+    
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a href="javascript:;" class="popup-trigger">
+        
+          <i class="fa fa-search fa-fw"></i>搜索</a>
+      </li>
+    
+  </ul>
+
+    
+
+</nav>
+  <div class="site-search">
+    <div class="popup search-popup">
+    <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="none"
+           placeholder="搜索..." spellcheck="false"
+           type="text" id="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result"></div>
+
+</div>
+<div class="search-pop-overlay"></div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+  <a href="https://github.com/canon88" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/06/02/Elastalert-新增周期性检测规则/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Canon">
+      <meta itemprop="description" content="一个热爱健身的安全分析师">
+      <meta itemprop="image" content="/images/avatar.jpeg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Canon's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">Elastalert - 新增 参数遍历、周期性检测模型
+
+          
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              
+                
+              
+
+              <time title="创建时间：2020-06-02 11:35:00 / 修改时间：11:47:28" itemprop="dateCreated datePublished" datetime="2020-06-02T11:35:00+08:00">2020-06-02</time>
+            </span>
+          
+            
+
+            
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/SIEM/" itemprop="url" rel="index"><span itemprop="name">SIEM</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h4 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h4><p>​        由于AWS流量镜像的特殊性，现阶段生产网的架构中只接入了<strong>HTTP</strong>与<strong>DNS</strong>流量，分别采用了<strong>Zeek</strong>与<strong>Suricata</strong>对现有流量进行分析与预警。<strong>Suricata</strong>负责基于签名的特征检测，<strong>Zeek</strong>负责定制化事件的脚本检测，也算是“各司其职”。近几日，某个业务接口出现了Pindom告警，经过分析发现部分IP尝试对该接口的参数进行遍历。由于遍历参数对应的值设置的都比较大，且后台并未对该参数进行深度的限制，导致了服务器会不断的进行计算，最终导致接口无响应。</p>
+<h4 id="需求"><a href="#需求" class="headerlink" title="需求"></a>需求</h4><pre><code>1. 检测**参数遍历**行为；
+  2. 访问是否存在**周期性**；
+  3. **unique user_agent** 判断；
+  4. **threat intelligence**进行研判；</code></pre><h4 id="实现"><a href="#实现" class="headerlink" title="实现"></a>实现</h4><p>​        通过扩展<strong><a href="https://github.com/Yelp/elastalert" target="_blank" rel="noopener">ElastAlert</a></strong>告警框架的告警模型，来实现以上需求。</p>
+<h5 id="参数遍历"><a href="#参数遍历" class="headerlink" title="参数遍历"></a>参数遍历</h5><ul>
+<li><h6 id="新增规则-Spider-py"><a href="#新增规则-Spider-py" class="headerlink" title="新增规则 - Spider.py"></a>新增规则 - Spider.py</h6></li>
+</ul>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br><span class="line">196</span><br><span class="line">197</span><br><span class="line">198</span><br><span class="line">199</span><br><span class="line">200</span><br><span class="line">201</span><br><span class="line">202</span><br><span class="line">203</span><br><span class="line">204</span><br><span class="line">205</span><br><span class="line">206</span><br><span class="line">207</span><br><span class="line">208</span><br><span class="line">209</span><br><span class="line">210</span><br><span class="line">211</span><br><span class="line">212</span><br><span class="line">213</span><br><span class="line">214</span><br><span class="line">215</span><br><span class="line">216</span><br><span class="line">217</span><br><span class="line">218</span><br><span class="line">219</span><br><span class="line">220</span><br><span class="line">221</span><br><span class="line">222</span><br><span class="line">223</span><br><span class="line">224</span><br><span class="line">225</span><br><span class="line">226</span><br><span class="line">227</span><br><span class="line">228</span><br><span class="line">229</span><br><span class="line">230</span><br><span class="line">231</span><br><span class="line">232</span><br><span class="line">233</span><br><span class="line">234</span><br><span class="line">235</span><br><span class="line">236</span><br><span class="line">237</span><br><span class="line">238</span><br><span class="line">239</span><br><span class="line">240</span><br><span class="line">241</span><br><span class="line">242</span><br><span class="line">243</span><br><span class="line">244</span><br><span class="line">245</span><br><span class="line">246</span><br><span class="line">247</span><br><span class="line">248</span><br><span class="line">249</span><br><span class="line">250</span><br><span class="line">251</span><br><span class="line">252</span><br><span class="line">253</span><br><span class="line">254</span><br><span class="line">255</span><br><span class="line">256</span><br><span class="line">257</span><br><span class="line">258</span><br><span class="line">259</span><br><span class="line">260</span><br><span class="line">261</span><br><span class="line">262</span><br><span class="line">263</span><br><span class="line">264</span><br><span class="line">265</span><br><span class="line">266</span><br><span class="line">267</span><br><span class="line">268</span><br><span class="line">269</span><br><span class="line">270</span><br><span class="line">271</span><br><span class="line">272</span><br><span class="line">273</span><br><span class="line">274</span><br><span class="line">275</span><br><span class="line">276</span><br><span class="line">277</span><br><span class="line">278</span><br><span class="line">279</span><br><span class="line">280</span><br><span class="line">281</span><br><span class="line">282</span><br><span class="line">283</span><br><span class="line">284</span><br><span class="line">285</span><br><span class="line">286</span><br><span class="line">287</span><br><span class="line">288</span><br><span class="line">289</span><br><span class="line">290</span><br><span class="line">291</span><br><span class="line">292</span><br><span class="line">293</span><br><span class="line">294</span><br><span class="line">295</span><br><span class="line">296</span><br><span class="line">297</span><br><span class="line">298</span><br><span class="line">299</span><br><span class="line">300</span><br><span class="line">301</span><br><span class="line">302</span><br><span class="line">303</span><br><span class="line">304</span><br><span class="line">305</span><br><span class="line">306</span><br><span class="line">307</span><br><span class="line">308</span><br><span class="line">309</span><br><span class="line">310</span><br><span class="line">311</span><br><span class="line">312</span><br><span class="line">313</span><br><span class="line">314</span><br><span class="line">315</span><br><span class="line">316</span><br><span class="line">317</span><br><span class="line">318</span><br><span class="line">319</span><br><span class="line">320</span><br><span class="line">321</span><br><span class="line">322</span><br><span class="line">323</span><br><span class="line">324</span><br><span class="line">325</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> sys</span><br><span class="line"><span class="keyword">import</span> json</span><br><span class="line"><span class="keyword">import</span> redis</span><br><span class="line"><span class="keyword">import</span> html</span><br><span class="line"><span class="keyword">import</span> datetime</span><br><span class="line"><span class="keyword">from</span> multiprocessing <span class="keyword">import</span> Process, JoinableQueue, Lock, Manager</span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> elastalert.ruletypes <span class="keyword">import</span> RuleType</span><br><span class="line"><span class="keyword">from</span> elastalert.util <span class="keyword">import</span> elastalert_logger</span><br><span class="line"></span><br><span class="line"><span class="keyword">try</span>:</span><br><span class="line">    <span class="keyword">import</span> pandas <span class="keyword">as</span> pd</span><br><span class="line"><span class="keyword">except</span>:</span><br><span class="line">    print(<span class="string">"Please make sure you have pandas installed. pip install pandas"</span>)</span><br><span class="line">    sys.exit(<span class="number">0</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">try</span>:</span><br><span class="line">    <span class="keyword">from</span> tqdm <span class="keyword">import</span> tqdm</span><br><span class="line"><span class="keyword">except</span>:</span><br><span class="line">    print(<span class="string">"Please make sure you have tqdm module installed. pip install tqdm"</span>)</span><br><span class="line">    sys.exit(<span class="number">0</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">conn</span><span class="params">(host=<span class="string">'localhost'</span>, port=<span class="number">6379</span>, password=None, db=<span class="number">0</span>)</span>:</span></span><br><span class="line">    pool = redis.ConnectionPool(host=host, port=port, password=password, db=db)</span><br><span class="line">    conn = redis.Redis(connection_pool=pool)</span><br><span class="line">    <span class="keyword">return</span> conn</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">put_data</span><span class="params">(conn, q, data)</span>:</span></span><br><span class="line">    <span class="keyword">with</span> conn.pipeline() <span class="keyword">as</span> pipe:</span><br><span class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> data:</span><br><span class="line">            pipe.lpush(q, i)</span><br><span class="line">        pipe.execute()</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">SpiderRule</span><span class="params">(RuleType)</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, rules, args=None)</span>:</span></span><br><span class="line">        super(SpiderRule, self).__init__(rules, args=<span class="literal">None</span>)</span><br><span class="line">        self.MAX_ARGS_LENGTH = int(self.rules[<span class="string">'beacon'</span>][<span class="string">'max_args_length'</span>])</span><br><span class="line">        self.MIN_HITS = int(self.rules[<span class="string">'beacon'</span>][<span class="string">'min_hits'</span>])</span><br><span class="line">        self.MAX_UNIQUE_ARGS = int(self.rules[<span class="string">'beacon'</span>][<span class="string">'max_unique_args'</span>])</span><br><span class="line">        self.THRESHOLD_PERCENT = int(self.rules[<span class="string">'beacon'</span>][<span class="string">'threshold_percent'</span>])</span><br><span class="line">        self.NUM_PROCESSES = int(self.rules[<span class="string">'beacon'</span>][<span class="string">'threads'</span>])</span><br><span class="line">        self.UA_PROCESSES = int(self.rules[<span class="string">'beacon'</span>][<span class="string">'user_agent'</span>])</span><br><span class="line"></span><br><span class="line">        self.TIMESTAMP = <span class="string">'@timestamp'</span></span><br><span class="line">        self.FORMAT_TIMESTAMP = self.rules[<span class="string">'timestamp'</span>].get(<span class="string">'format'</span>, <span class="literal">None</span>)</span><br><span class="line"></span><br><span class="line">        self.beacon_module = self.rules[<span class="string">'beacon'</span>][<span class="string">'beacon_module'</span>]</span><br><span class="line">        self.WINDOW = int(self.rules[<span class="string">'beacon'</span>][<span class="string">'window'</span>])</span><br><span class="line">        self.MIN_INTERVAL = int(self.rules[<span class="string">'beacon'</span>][<span class="string">'min_interval'</span>])</span><br><span class="line">        buffer_time = str(self.rules[<span class="string">'buffer_time'</span>])</span><br><span class="line">        self.PERIOD = <span class="string">':'</span>.join(buffer_time.split(<span class="string">':'</span>)[:<span class="number">2</span>])</span><br><span class="line"></span><br><span class="line">        self.fields = self.normalized_field(self.rules[<span class="string">'field'</span>])</span><br><span class="line">        self.src_ip = self.fields[<span class="string">'aliases'</span>][<span class="string">'src_ip'</span>]</span><br><span class="line">        self.url = self.fields[<span class="string">'aliases'</span>][<span class="string">'url'</span>]</span><br><span class="line">        self.url_path = self.fields[<span class="string">'aliases'</span>][<span class="string">'url_path'</span>]</span><br><span class="line">        self.http_host = self.fields[<span class="string">'aliases'</span>][<span class="string">'http_host'</span>]</span><br><span class="line">        self.user_agent = self.fields[<span class="string">'aliases'</span>][<span class="string">'user_agent'</span>]</span><br><span class="line"></span><br><span class="line">        self.json = self.rules[<span class="string">'output'</span>][<span class="string">'json'</span>].get(<span class="string">'enable'</span>, <span class="literal">None</span>)</span><br><span class="line">        self.redis = self.rules[<span class="string">'output'</span>][<span class="string">'redis'</span>].get(<span class="string">'enable'</span>, <span class="literal">None</span>)</span><br><span class="line"></span><br><span class="line">        self.q_job = JoinableQueue()</span><br><span class="line">        self.l_df = Lock()</span><br><span class="line">        self.l_list = Lock()</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">normalized_field</span><span class="params">(self, d)</span>:</span></span><br><span class="line">        fields = &#123;<span class="string">'hash'</span>: [], <span class="string">'output'</span>: [], <span class="string">'aliases'</span>: &#123;&#125;&#125;</span><br><span class="line">        <span class="keyword">for</span> field, info <span class="keyword">in</span> d.items():</span><br><span class="line">            alias = info[<span class="string">'alias'</span>]</span><br><span class="line">            fields[<span class="string">'aliases'</span>][alias] = field</span><br><span class="line">            <span class="keyword">for</span> i <span class="keyword">in</span> info.get(<span class="string">'type'</span>, []):</span><br><span class="line">                fields[i].append(field)</span><br><span class="line">        <span class="keyword">return</span> fields</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">add_data</span><span class="params">(self, data)</span>:</span></span><br><span class="line">        <span class="comment"># Detection of spider crawlers</span></span><br><span class="line">        self.df = pd.json_normalize(data)</span><br><span class="line">        results = self.find_spiders()</span><br><span class="line"></span><br><span class="line">        d = results.to_dict(orient=<span class="string">"records"</span>)</span><br><span class="line"></span><br><span class="line">        <span class="comment"># Output to local files</span></span><br><span class="line">        <span class="keyword">if</span> self.json:</span><br><span class="line">            json_path = self.rules[<span class="string">'output'</span>][<span class="string">'json'</span>][<span class="string">'path'</span>]</span><br><span class="line">            <span class="keyword">with</span> open(json_path, <span class="string">'a'</span>) <span class="keyword">as</span> out_file:</span><br><span class="line">                <span class="keyword">for</span> i <span class="keyword">in</span> d:</span><br><span class="line">                    out_file.write(json.dumps(i) + <span class="string">'\n'</span>)</span><br><span class="line"></span><br><span class="line">        <span class="comment"># Output to Redis Server</span></span><br><span class="line">        <span class="keyword">if</span> self.redis:</span><br><span class="line">            <span class="keyword">try</span>:</span><br><span class="line">                host = self.rules[<span class="string">'output'</span>][<span class="string">'redis'</span>][<span class="string">'host'</span>]</span><br><span class="line">                port = self.rules[<span class="string">'output'</span>][<span class="string">'redis'</span>][<span class="string">'port'</span>]</span><br><span class="line">                password = self.rules[<span class="string">'output'</span>][<span class="string">'redis'</span>][<span class="string">'password'</span>]</span><br><span class="line">                db = self.rules[<span class="string">'output'</span>][<span class="string">'redis'</span>][<span class="string">'db'</span>]</span><br><span class="line">                key = self.rules[<span class="string">'output'</span>][<span class="string">'redis'</span>][<span class="string">'key'</span>]</span><br><span class="line">                ioc = self.rules[<span class="string">'output'</span>][<span class="string">'redis'</span>][<span class="string">'field'</span>]</span><br><span class="line"></span><br><span class="line">                redis_conn = conn(host=host, port=port,</span><br><span class="line">                                  password=password, db=db)</span><br><span class="line">                IoC = results[ioc].unique().tolist()</span><br><span class="line">                put_data(redis_conn, key, IoC)</span><br><span class="line">            <span class="keyword">except</span>:</span><br><span class="line">                elastalert_logger.error(<span class="string">"Output Redis configuration errors."</span>)</span><br><span class="line">        self.add_match(d)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># The results of get_match_str will appear in the alert text</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">get_match_str</span><span class="params">(self, match)</span>:</span></span><br><span class="line">        <span class="keyword">return</span> json.dumps(match)</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">add_match</span><span class="params">(self, results)</span>:</span></span><br><span class="line">        <span class="keyword">for</span> result <span class="keyword">in</span> results:</span><br><span class="line">            super(SpiderRule, self).add_match(result)</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">get_args_hash</span><span class="params">(self, args, session_id)</span>:</span></span><br><span class="line">        <span class="keyword">return</span> hash(tuple(args + [session_id]))</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">get_query_str</span><span class="params">(self, request)</span>:</span></span><br><span class="line">        query = request.split(<span class="string">'?'</span>)[<span class="number">-1</span>]</span><br><span class="line">        query_str = dict([i.split(<span class="string">"="</span>, <span class="number">1</span>) <span class="keyword">for</span> i <span class="keyword">in</span> query.split(</span><br><span class="line">            <span class="string">"&amp;"</span>) <span class="keyword">if</span> i <span class="keyword">if</span> len(i.split(<span class="string">"="</span>, <span class="number">1</span>)) == <span class="number">2</span>])</span><br><span class="line">        query_str[<span class="string">'args_list'</span>] = list(query_str.keys())</span><br><span class="line">        query_str[<span class="string">'max_length'</span>] = len(query_str)</span><br><span class="line">        query_str[<span class="string">'url_sample'</span>] = request</span><br><span class="line">        <span class="keyword">return</span> query_str</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">percent_grouping</span><span class="params">(self, d, total)</span>:</span></span><br><span class="line">        interval = <span class="number">0</span></span><br><span class="line">        <span class="comment"># Finding the key with the largest value (interval with most events)</span></span><br><span class="line">        mx_key = int(max(iter(list(d.keys())), key=(<span class="keyword">lambda</span> key: d[key])))</span><br><span class="line">        mx_percent = <span class="number">0.0</span></span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> range(mx_key - self.WINDOW, mx_key + <span class="number">1</span>):</span><br><span class="line">            current = <span class="number">0</span></span><br><span class="line">            <span class="comment"># Finding center of current window</span></span><br><span class="line">            curr_interval = i + int(self.WINDOW / <span class="number">2</span>)</span><br><span class="line"></span><br><span class="line">            <span class="keyword">for</span> j <span class="keyword">in</span> range(i, i + self.WINDOW):</span><br><span class="line">                <span class="keyword">if</span> j <span class="keyword">in</span> d:</span><br><span class="line">                    current += d[j]</span><br><span class="line"></span><br><span class="line">            percent = float(current) / total * <span class="number">100</span></span><br><span class="line">            <span class="keyword">if</span> percent &gt; mx_percent:</span><br><span class="line">                mx_percent = percent</span><br><span class="line">                interval = curr_interval</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> interval, mx_percent</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">find_beacon</span><span class="params">(self, session_data)</span>:</span></span><br><span class="line">        beacon = &#123;&#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> <span class="keyword">not</span> self.FORMAT_TIMESTAMP:</span><br><span class="line">            session_data[self.TIMESTAMP] = pd.to_datetime(</span><br><span class="line">                session_data[self.TIMESTAMP])</span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            session_data[self.TIMESTAMP] = pd.to_datetime(</span><br><span class="line">                session_data[self.TIMESTAMP], format=self.FORMAT_TIMESTAMP)</span><br><span class="line">        session_data[self.TIMESTAMP] = (</span><br><span class="line">            session_data[self.TIMESTAMP].astype(int) / <span class="number">1000000000</span>).astype(int)</span><br><span class="line"></span><br><span class="line">        session_data = session_data.sort_values([self.TIMESTAMP])</span><br><span class="line">        session_data[<span class="string">'delta'</span>] = (</span><br><span class="line">            session_data[self.TIMESTAMP] - session_data[self.TIMESTAMP].shift()).fillna(<span class="number">0</span>)</span><br><span class="line">        session_data = session_data[<span class="number">1</span>:]</span><br><span class="line">        d = dict(session_data.delta.value_counts())</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> key <span class="keyword">in</span> list(d.keys()):</span><br><span class="line">            <span class="keyword">if</span> key &lt; self.MIN_INTERVAL:</span><br><span class="line">                <span class="keyword">del</span> d[key]</span><br><span class="line"></span><br><span class="line">        <span class="comment"># Finding the total number of events</span></span><br><span class="line">        total = sum(d.values())</span><br><span class="line">        <span class="keyword">if</span> d <span class="keyword">and</span> total &gt; self.MIN_HITS:</span><br><span class="line">            window, percent = self.percent_grouping(d, total)</span><br><span class="line">            <span class="keyword">if</span> percent &gt; self.THRESHOLD_PERCENT <span class="keyword">and</span> total &gt; self.MIN_HITS:</span><br><span class="line">                beacon = &#123;</span><br><span class="line">                    <span class="string">'percent'</span>: int(percent),</span><br><span class="line">                    <span class="string">'interval'</span>: int(window),</span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> beacon</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">find_spider</span><span class="params">(self, q_job, spider_list)</span>:</span></span><br><span class="line">        <span class="keyword">while</span> <span class="keyword">not</span> q_job.empty():</span><br><span class="line">            session_id = q_job.get()</span><br><span class="line">            self.l_df.acquire()</span><br><span class="line">            session_data = self.df[self.df[<span class="string">'session_id'</span>]</span><br><span class="line">                                   == session_id]</span><br><span class="line">            self.l_df.release()</span><br><span class="line"></span><br><span class="line">            query_str = session_data[self.url].apply(</span><br><span class="line">                <span class="keyword">lambda</span> req: self.get_query_str(req)).tolist()</span><br><span class="line">            query_data = pd.DataFrame(query_str)</span><br><span class="line"></span><br><span class="line">            <span class="comment"># get args_hash</span></span><br><span class="line">            query_data[<span class="string">'args_hash'</span>] = query_data[<span class="string">'args_list'</span>].apply(</span><br><span class="line">                <span class="keyword">lambda</span> args: self.get_args_hash(args, session_id))</span><br><span class="line"></span><br><span class="line">            <span class="keyword">for</span> i <span class="keyword">in</span> query_data[<span class="string">'args_hash'</span>].unique():</span><br><span class="line">                result = &#123;</span><br><span class="line">                    <span class="string">"detail"</span>: &#123;</span><br><span class="line">                        <span class="string">'percent'</span>: &#123;&#125;,</span><br><span class="line">                        <span class="string">'unique'</span>: &#123;&#125;</span><br><span class="line">                    &#125;,</span><br><span class="line">                    <span class="string">"tags"</span>: [],</span><br><span class="line">                    <span class="string">"src_ip"</span>: session_data[self.src_ip].tolist()[<span class="number">0</span>],</span><br><span class="line">                    <span class="string">"url_path"</span>: session_data[self.url_path].tolist()[<span class="number">0</span>],</span><br><span class="line">                    <span class="string">"http_host"</span>: session_data[self.http_host].tolist()[<span class="number">0</span>],</span><br><span class="line">                    <span class="string">"unique_ua"</span>: session_data[self.user_agent].unique().shape[<span class="number">0</span>],</span><br><span class="line">                    <span class="string">"alert"</span>: <span class="literal">False</span>,</span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">                df = query_data[query_data[<span class="string">'args_hash'</span>] == i]</span><br><span class="line">                count_args_length = df[<span class="string">'max_length'</span>].iloc[<span class="number">0</span>]</span><br><span class="line">                <span class="keyword">if</span> count_args_length &gt; self.MAX_ARGS_LENGTH:</span><br><span class="line">                    <span class="keyword">continue</span></span><br><span class="line"></span><br><span class="line">                total_hits = df.shape[<span class="number">0</span>]</span><br><span class="line">                <span class="keyword">if</span> total_hits &lt; self.MIN_HITS:</span><br><span class="line">                    <span class="keyword">continue</span></span><br><span class="line"></span><br><span class="line">                args_list = df[<span class="string">'args_list'</span>].iloc[<span class="number">0</span>]</span><br><span class="line">                <span class="keyword">for</span> i <span class="keyword">in</span> args_list:</span><br><span class="line">                    unique_args = len(df[i].unique())</span><br><span class="line">                    <span class="keyword">if</span> unique_args == <span class="number">1</span>:</span><br><span class="line">                        <span class="keyword">continue</span></span><br><span class="line"></span><br><span class="line">                    <span class="comment"># Calculate the percentage based on the number of changes in the parameters</span></span><br><span class="line">                    current_percent = int((unique_args / total_hits) * <span class="number">100</span>)</span><br><span class="line">                    <span class="keyword">if</span> current_percent &lt; self.THRESHOLD_PERCENT:</span><br><span class="line">                        <span class="keyword">continue</span></span><br><span class="line"></span><br><span class="line">                    result[<span class="string">'detail'</span>][<span class="string">'percent'</span>][i] = current_percent</span><br><span class="line">                    result[<span class="string">'detail'</span>][<span class="string">'unique'</span>][i] = unique_args</span><br><span class="line"></span><br><span class="line">                    <span class="comment"># Number of parameters with changes</span></span><br><span class="line">                    count_unique_args = len(result[<span class="string">'detail'</span>][<span class="string">'unique'</span>])</span><br><span class="line">                    <span class="keyword">if</span> count_unique_args &lt;= self.MAX_UNIQUE_ARGS:</span><br><span class="line">                        result[<span class="string">'alert'</span>] = <span class="literal">True</span></span><br><span class="line"></span><br><span class="line">                <span class="keyword">if</span> <span class="keyword">not</span> result[<span class="string">'detail'</span>][<span class="string">'unique'</span>]:</span><br><span class="line">                    <span class="keyword">continue</span></span><br><span class="line"></span><br><span class="line">                <span class="comment"># Beacon analysis</span></span><br><span class="line">                <span class="keyword">if</span> self.beacon_module:</span><br><span class="line">                    result[<span class="string">'beacon'</span>] = self.find_beacon(</span><br><span class="line">                        session_data.reset_index(drop=<span class="literal">True</span>))</span><br><span class="line"></span><br><span class="line">                result[<span class="string">'args_list'</span>] = args_list</span><br><span class="line">                result[<span class="string">'total_hits'</span>] = total_hits</span><br><span class="line">                result[<span class="string">'url_sample'</span>] = df[<span class="string">'url_sample'</span>].iloc[<span class="number">0</span>]</span><br><span class="line">                result[<span class="string">'period'</span>] = self.PERIOD</span><br><span class="line"></span><br><span class="line">                <span class="keyword">if</span> result[<span class="string">'alert'</span>]:</span><br><span class="line">                    result[<span class="string">'tags'</span>].append(<span class="string">'enumerate'</span>)</span><br><span class="line"></span><br><span class="line">                <span class="keyword">if</span> result[<span class="string">'beacon'</span>]:</span><br><span class="line">                    result[<span class="string">'tags'</span>].append(<span class="string">'beacon'</span>)</span><br><span class="line"></span><br><span class="line">                <span class="keyword">if</span> result[<span class="string">'unique_ua'</span>] &gt;= self.UA_PROCESSES:</span><br><span class="line">                    result[<span class="string">'tags'</span>].append(<span class="string">'suspicious-ua'</span>)</span><br><span class="line"></span><br><span class="line">                self.l_list.acquire()</span><br><span class="line">                spider_list.append(result)</span><br><span class="line">                self.l_list.release()</span><br><span class="line">            q_job.task_done()</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">find_spiders</span><span class="params">(self)</span>:</span></span><br><span class="line">        <span class="keyword">if</span> self.df.empty:</span><br><span class="line">            <span class="keyword">raise</span> Exception(</span><br><span class="line">                <span class="string">"Elasticsearch did not retrieve any data. Please ensure your settings are correct inside the config file."</span>)</span><br><span class="line"></span><br><span class="line">        tqdm.pandas(desc=<span class="string">"Detection of Spider Crawlers."</span>)</span><br><span class="line"></span><br><span class="line">        <span class="comment"># get url_path</span></span><br><span class="line">        self.df[self.url_path] = self.df[self.url].str.split(<span class="string">'?'</span>).str.get(<span class="number">0</span>)</span><br><span class="line"></span><br><span class="line">        <span class="comment"># add session_id from hash fields</span></span><br><span class="line">        self.df[<span class="string">'session_id'</span>] = self.df[self.fields[<span class="string">'hash'</span>]</span><br><span class="line">                                        ].progress_apply(<span class="keyword">lambda</span> row: hash(tuple(row)), axis=<span class="number">1</span>)</span><br><span class="line">        <span class="comment"># split url</span></span><br><span class="line">        self.df = self.df[self.df[self.url].apply(<span class="keyword">lambda</span> request: <span class="literal">True</span> <span class="keyword">if</span> len(</span><br><span class="line">            request.split(<span class="string">'?'</span>)) == <span class="number">2</span> <span class="keyword">else</span> <span class="literal">False</span>)].reset_index(drop=<span class="literal">True</span>)</span><br><span class="line">        <span class="comment"># normalized url</span></span><br><span class="line">        self.df[self.url] = self.df[self.url].apply(</span><br><span class="line">            <span class="keyword">lambda</span> request: html.unescape(request))</span><br><span class="line">        <span class="comment"># unique session_id</span></span><br><span class="line">        unique_session = self.df[<span class="string">'session_id'</span>].unique()</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> session <span class="keyword">in</span> unique_session:</span><br><span class="line">            self.q_job.put(session)</span><br><span class="line"></span><br><span class="line">        mgr = Manager()</span><br><span class="line">        spider_list = mgr.list()</span><br><span class="line">        processes = [Process(target=self.find_spider, args=(</span><br><span class="line">            self.q_job, spider_list,)) <span class="keyword">for</span> thread <span class="keyword">in</span> range(self.NUM_PROCESSES)]</span><br><span class="line"></span><br><span class="line">        <span class="comment"># Run processes</span></span><br><span class="line">        <span class="keyword">for</span> p <span class="keyword">in</span> processes:</span><br><span class="line">            p.start()</span><br><span class="line"></span><br><span class="line">        <span class="comment"># Exit the completed processes</span></span><br><span class="line">        <span class="keyword">for</span> p <span class="keyword">in</span> processes:</span><br><span class="line">            p.join()</span><br><span class="line"></span><br><span class="line">        results = pd.DataFrame(list(spider_list))</span><br><span class="line"></span><br><span class="line">        <span class="comment"># add timestamp</span></span><br><span class="line">        now = datetime.datetime.now().isoformat()</span><br><span class="line">        results[<span class="string">'timestamp'</span>] = now</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> <span class="keyword">not</span> results.empty:</span><br><span class="line">            results = results[results[<span class="string">'alert'</span>] == <span class="literal">True</span>]</span><br><span class="line"></span><br><span class="line">        match_log = <span class="string">"Queried rule %s matches %s crawl events"</span> % (</span><br><span class="line">            self.rules[<span class="string">'name'</span>],</span><br><span class="line">            results.shape[<span class="number">0</span>]</span><br><span class="line">        )</span><br><span class="line">        elastalert_logger.info(match_log)</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> results</span><br></pre></td></tr></table></figure>
+
+<h5 id="配置文件"><a href="#配置文件" class="headerlink" title="配置文件"></a>配置文件</h5><ul>
+<li><h6 id="Web-yaml"><a href="#Web-yaml" class="headerlink" title="Web.yaml"></a>Web.yaml</h6></li>
+</ul>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">name:</span> <span class="string">"Detection of Spider Crawlers"</span></span><br><span class="line"><span class="attr">es_host:</span> <span class="string">"es_server"</span></span><br><span class="line"><span class="attr">es_port:</span> <span class="number">9200</span></span><br><span class="line"><span class="attr">type:</span> <span class="string">"elastalert_modules.spider.my_rules.SpiderRule"</span></span><br><span class="line"></span><br><span class="line"><span class="attr">index:</span> <span class="string">"zeek-other-%Y.%m.%d"</span></span><br><span class="line"><span class="attr">use_strftime_index:</span> <span class="literal">true</span></span><br><span class="line"></span><br><span class="line"><span class="attr">filter:</span></span><br><span class="line"><span class="attr">- term:</span></span><br><span class="line"><span class="attr">    host:</span> <span class="string">"canon88.github.io"</span></span><br><span class="line"><span class="attr">- term:</span></span><br><span class="line">    <span class="string">method.keyword:</span> <span class="string">"GET"</span></span><br><span class="line"></span><br><span class="line"><span class="attr">include:</span> <span class="string">["true_client_ip",</span> <span class="string">"host"</span><span class="string">,</span> <span class="string">"uri"</span><span class="string">,</span> <span class="string">"uri_path"</span><span class="string">,</span> <span class="string">"user_agent"</span><span class="string">]</span></span><br><span class="line"></span><br><span class="line"><span class="attr">timestamp:</span></span><br><span class="line"><span class="attr">  format:</span> <span class="literal">false</span></span><br><span class="line"><span class="attr">timestamp_field:</span> <span class="string">"@timestamp"</span></span><br><span class="line"></span><br><span class="line"><span class="attr">buffer_time:</span></span><br><span class="line"><span class="attr">  hours:</span> <span class="number">12</span></span><br><span class="line"></span><br><span class="line"><span class="attr">run_every:</span></span><br><span class="line"><span class="attr">  minutes:</span> <span class="number">10</span></span><br><span class="line"></span><br><span class="line"><span class="attr">max_query_size:</span> <span class="number">10000</span></span><br><span class="line"><span class="attr">scroll:</span> <span class="literal">true</span></span><br><span class="line"></span><br><span class="line"><span class="attr">beacon:</span></span><br><span class="line"><span class="attr">  max_args_length:</span> <span class="number">10</span>		<span class="comment"># 最大检测参数个数</span></span><br><span class="line"><span class="attr">  min_hits:</span> <span class="number">120</span>					<span class="comment"># 最小命中事件数</span></span><br><span class="line"><span class="attr">  max_unique_args:</span> <span class="number">2</span>		<span class="comment"># 最大动态变化参数</span></span><br><span class="line"><span class="attr">  threshold_percent:</span> <span class="number">70</span>	<span class="comment"># 请求阈值百分比</span></span><br><span class="line"><span class="attr">  threads:</span> <span class="number">16</span>						<span class="comment"># 多进程</span></span><br><span class="line"><span class="attr">  beacon_module:</span> <span class="literal">true</span>		<span class="comment"># 开启周期性检测</span></span><br><span class="line"><span class="attr">  min_interval:</span> <span class="number">1</span>				<span class="comment"># 最小周期</span></span><br><span class="line"><span class="attr">  window:</span> <span class="number">2</span>							<span class="comment"># 抖动窗口</span></span><br><span class="line"><span class="attr">  user_agent:</span> <span class="number">20</span>				<span class="comment"># 唯一UA个数</span></span><br><span class="line"></span><br><span class="line"><span class="attr">field:</span></span><br><span class="line"><span class="attr">  true_client_ip:</span></span><br><span class="line"><span class="attr">    alias:</span> <span class="string">src_ip</span></span><br><span class="line"><span class="attr">    type:</span> <span class="string">[hash]</span></span><br><span class="line"><span class="attr">  host:</span></span><br><span class="line"><span class="attr">    alias:</span> <span class="string">http_host</span></span><br><span class="line"><span class="attr">    type:</span> <span class="string">[hash]</span></span><br><span class="line"><span class="attr">  uri_path:</span></span><br><span class="line"><span class="attr">    alias:</span> <span class="string">url_path</span></span><br><span class="line"><span class="attr">    type:</span> <span class="string">[hash]</span></span><br><span class="line"><span class="attr">  uri:</span></span><br><span class="line"><span class="attr">    alias:</span> <span class="string">url</span></span><br><span class="line"><span class="attr">  user_agent:</span></span><br><span class="line"><span class="attr">    alias:</span> <span class="string">user_agent</span></span><br><span class="line"></span><br><span class="line"><span class="attr">output:</span></span><br><span class="line"><span class="attr">  json:</span></span><br><span class="line"><span class="attr">    enable:</span> <span class="literal">yes</span>	<span class="comment"># 本地输出</span></span><br><span class="line"><span class="attr">    path:</span> <span class="string">/var/log/spider/spider_detect.json</span></span><br><span class="line"><span class="attr">  redis:</span></span><br><span class="line"><span class="attr">    enable:</span> <span class="literal">no</span>	<span class="comment"># 输出至Redis，联动情报数据进行研判。</span></span><br><span class="line"><span class="attr">    host:</span> <span class="string">redis_server</span></span><br><span class="line"><span class="attr">    port:</span> <span class="number">6379</span></span><br><span class="line"><span class="attr">    db:</span> <span class="number">0</span></span><br><span class="line"><span class="attr">    password:</span> <span class="string">redis_password</span></span><br><span class="line"><span class="attr">    key:</span> <span class="attr">spider:feeds</span></span><br><span class="line"><span class="attr">    field:</span> <span class="string">src_ip</span></span><br><span class="line"></span><br><span class="line"><span class="attr">alert:</span></span><br><span class="line"><span class="bullet">-</span> <span class="string">debug</span></span><br></pre></td></tr></table></figure>
+
+<h5 id="告警输出"><a href="#告警输出" class="headerlink" title="告警输出"></a>告警输出</h5><figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="attr">"detail"</span>: &#123;</span><br><span class="line">    <span class="attr">"percent"</span>: &#123;</span><br><span class="line">      <span class="attr">"cookieid"</span>: <span class="number">81</span></span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="attr">"unique"</span>: &#123;</span><br><span class="line">      <span class="attr">"cookieid"</span>: <span class="number">133</span></span><br><span class="line">    &#125;</span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="attr">"tags"</span>: [</span><br><span class="line">    <span class="string">"enumerate"</span>, // 存在参数遍历行为</span><br><span class="line">    <span class="string">"suspicious-ua"</span>	// user_agent 超过阈值</span><br><span class="line">  ],</span><br><span class="line">  <span class="attr">"src_ip"</span>: <span class="string">"54.160.169.250"</span>,</span><br><span class="line">  <span class="attr">"url_path"</span>: <span class="string">"/image/cookieId.html"</span>,</span><br><span class="line">  <span class="attr">"http_host"</span>: <span class="string">"canon88.github.io"</span>,</span><br><span class="line">  <span class="attr">"unique_ua"</span>: <span class="number">47</span>,</span><br><span class="line">  <span class="attr">"alert"</span>: <span class="literal">true</span>,</span><br><span class="line">  <span class="attr">"beacon"</span>: &#123;&#125;,</span><br><span class="line">  <span class="attr">"args_list"</span>: [</span><br><span class="line">    <span class="string">"cookieid"</span></span><br><span class="line">  ],</span><br><span class="line">  <span class="attr">"total_hits"</span>: <span class="number">164</span>,</span><br><span class="line">  <span class="attr">"url_sample"</span>: <span class="string">"/image/cookieId.html?cookieid=E99A3E54-5A81-2907-1372-339FFB70A464"</span>,</span><br><span class="line">  <span class="attr">"period"</span>: <span class="string">"1:00"</span>,</span><br><span class="line">  <span class="attr">"timestamp"</span>: <span class="string">"2020-06-02T11:07:59.276581"</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4><p>​        在1小时内，IP: 54.160.169.250 总共访问了该接口164次且cookieid参数更换了133次，占到总请求量的81%。并更换了47个不同的user_agent。</p>
+<p><img src="/2020/06/02/Elastalert-新增周期性检测规则/%E5%BC%82%E5%B8%B8%E8%AE%BF%E9%97%AE%E6%88%AA%E5%9B%BE-1.png" alt="image-20200602114610615"></p>
+<h4 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h4><ul>
+<li><p><strong><a href="https://github.com/austin-taylor/flare" target="_blank" rel="noopener">Flare</a></strong></p>
+</li>
+<li><p><strong><a href="https://github.com/Yelp/elastalert" target="_blank" rel="noopener">ElastAlert</a></strong></p>
+</li>
+</ul>
+
+    </div>
+
+    
+    
+    <div class="post-widgets">
+      <div id="needsharebutton-postbottom">
+        <span class="btn">
+          <i class="fa fa-share-alt" aria-hidden="true"></i>
+        </span>
+      </div>
+    </div>
+        
+      
+        <div id="reward-container">
+  <div>坚持原创技术分享，您的支持将鼓励我继续创作！</div>
+  <button id="reward-button" disable="enable" onclick="var qr = document.getElementById(&quot;qr&quot;); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    鼓励
+  </button>
+  <div id="qr" style="display: none;">
+        
+      
+      <div style="display: inline-block">
+        <img src="/images/wechatpay.png" alt="Canon 微信支付">
+        <p>微信支付</p>
+      </div>
+        
+      
+      <div style="display: inline-block">
+        <img src="/images/alipay.png" alt="Canon 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+      
+
+      <footer class="post-footer">
+          
+            
+          
+          <div class="post-tags">
+            
+              <a href="/tags/ElasticSearch/" rel="tag"># ElasticSearch</a>
+            
+              <a href="/tags/Elastalert/" rel="tag"># Elastalert</a>
+            
+          </div>
+        
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-next post-nav-item">
+              
+                <a href="/2020/05/11/Zeek实战-1/" rel="next" title="Zeek - 高度定制化的 DNS事件 + 文件还原">
+                  <i class="fa fa-chevron-left"></i> Zeek - 高度定制化的 DNS事件 + 文件还原
+                </a>
+              
+            </div>
+
+            <span class="post-nav-divider"></span>
+
+            <div class="post-nav-prev post-nav-item">
+              
+            </div>
+          </div>
+        
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+        
+        
+        
+        
+      
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#背景"><span class="nav-number">1.</span> <span class="nav-text">背景</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#需求"><span class="nav-number">2.</span> <span class="nav-text">需求</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#实现"><span class="nav-number">3.</span> <span class="nav-text">实现</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#参数遍历"><span class="nav-number">3.1.</span> <span class="nav-text">参数遍历</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#新增规则-Spider-py"><span class="nav-number">3.1.1.</span> <span class="nav-text">新增规则 - Spider.py</span></a></li></ol></li><li class="nav-item nav-level-5"><a class="nav-link" href="#配置文件"><span class="nav-number">3.2.</span> <span class="nav-text">配置文件</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#Web-yaml"><span class="nav-number">3.2.1.</span> <span class="nav-text">Web.yaml</span></a></li></ol></li><li class="nav-item nav-level-5"><a class="nav-link" href="#告警输出"><span class="nav-number">3.3.</span> <span class="nav-text">告警输出</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#总结"><span class="nav-number">4.</span> <span class="nav-text">总结</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#参考"><span class="nav-number">5.</span> <span class="nav-text">参考</span></a></li></ol></div>
+        
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image"
+      src="/images/avatar.jpeg"
+      alt="Canon">
+  <p class="site-author-name" itemprop="name">Canon</p>
+  <div class="site-description" itemprop="description">一个热爱健身的安全分析师</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">19</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-categories">
+        
+          
+            <a href="/categories/">
+          
+        
+        <span class="site-state-item-count">7</span>
+        <span class="site-state-item-name">分类</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-tags">
+        
+          
+            <a href="/tags/">
+          
+        
+        <span class="site-state-item-count">10</span>
+        <span class="site-state-item-name">标签</span>
+        </a>
+      </div>
+    
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="https://github.com/canon88" title="GitHub &rarr; https://github.com/canon88" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+    
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="mailto:unsec.monitor@gmail.com" title="E-Mail &rarr; mailto:unsec.monitor@gmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+    
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Canon</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.9.0</div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a> v7.4.1</div>
+
+        
+
+
+
+
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js?v=3.1.0"></script>
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+<script src="/js/utils.js?v=7.4.1"></script><script src="/js/motion.js?v=7.4.1"></script>
+<script src="/js/schemes/muse.js?v=7.4.1"></script>
+
+<script src="/js/next-boot.js?v=7.4.1"></script>
+
+
+
+  
+
+
+
+
+
+
+
+
+  <script src="/js/local-search.js?v=7.4.1"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+  <script src="//cdn.jsdelivr.net/gh/theme-next/theme-next-needmoreshare2@1/needsharebutton.min.js"></script>
+  <script>
+      pbOptions = {};
+        pbOptions.iconStyle = "box";
+      
+        pbOptions.boxForm = "horizontal";
+      
+        pbOptions.position = "bottomCenter";
+      
+        pbOptions.networks = "Weibo,Wechat,Douban,QQZone,Twitter,Facebook";
+      
+      new needShareButton('#needsharebutton-postbottom', pbOptions);
+  </script>
+</body>
+</html>

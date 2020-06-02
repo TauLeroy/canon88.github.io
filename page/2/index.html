@@ -267,6 +267,99 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/10/31/Suricata - Rules/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Canon">
+      <meta itemprop="description" content="一个热爱健身的安全分析师">
+      <meta itemprop="image" content="/images/avatar.jpeg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Canon's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+            
+            <a href="/2019/10/31/Suricata - Rules/" class="post-title-link" itemprop="url">Suricata Custom Rules</a>
+          
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              
+                
+              
+
+              <time title="创建时间：2019-10-31 17:45:00" itemprop="dateCreated datePublished" datetime="2019-10-31T17:45:00+08:00">2019-10-31</time>
+            </span>
+          
+            
+
+            
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2019-11-04 10:50:52" itemprop="dateModified" datetime="2019-11-04T10:50:52+08:00">2019-11-04</time>
+              </span>
+            
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/NIDS/" itemprop="url" rel="index"><span itemprop="name">NIDS</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="Solr-RCE-CVE-2019-0193"><a href="#Solr-RCE-CVE-2019-0193" class="headerlink" title="Solr RCE CVE-2019-0193"></a>Solr RCE CVE-2019-0193</h1><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># Solr POST RCE CVE-2019-0193</span></span><br><span class="line">alert http <span class="variable">$EXTERNAL_NET</span> any -&gt; <span class="variable">$HOME_NET</span> any (msg:<span class="string">"LOCAL RULES EXPLOIT Solr RCE CVE-2019-0193 POST"</span>; flow:to_server,established; flowbits:<span class="built_in">set</span>,CVE-2019-0193.post.request; content:<span class="string">"POST"</span>; http_method; fast_pattern; content:<span class="string">"/solr"</span>; http_uri; content:<span class="string">"/config"</span>; http_uri; content:<span class="string">"params.resource.loader.enabled"</span>; http_client_body; classtype:shellcode-detect; sid:3020016; rev:1; metadata:attack_target web_server, signature_severity Critical, direction outside_to_inside, created_at 2019_10_31, updated_at 2019_10_31, author Canon, tag RCE, tag CVE-2019-0193, tag http, tag exploit, tag Solr;)</span><br><span class="line"></span><br><span class="line">alert http <span class="variable">$EXTERNAL_NET</span> any -&gt; <span class="variable">$HOME_NET</span> any (msg:<span class="string">"LOCAL RULES EXPLOIT Solr RCE CVE-2019-0193 POST Successful"</span>; flow:from_server,established; flowbits:isset,CVE-2019-0193.post.request; content:<span class="string">"200"</span>; http_stat_code; classtype:shellcode-detect; sid:3020017; rev:1; metadata:attack_target web_server, signature_severity Critical, direction outside_to_inside, created_at 2019_10_31, updated_at 2019_10_31, author Canon, tag RCE, tag CVE-2019-0193, tag http, tag exploit, tag Solr;)</span><br><span class="line"></span><br><span class="line"><span class="comment"># Solr GET RCE CVE-2019-0193</span></span><br><span class="line">alert http <span class="variable">$EXTERNAL_NET</span> any -&gt; <span class="variable">$HOME_NET</span> any (msg:<span class="string">"LOCAL RULES EXPLOIT Solr RCE CVE-2019-0193 GET"</span>; flow:to_server,established; flowbits:<span class="built_in">set</span>,CVE-2019-0193.get.request; content:<span class="string">"GET"</span>; http_method; content:<span class="string">"/solr"</span>; http_uri; fast_pattern; content:<span class="string">"/select?"</span>; http_uri; content:<span class="string">"wt=velocity"</span>; http_uri; content:<span class="string">"java.lang.Runtime"</span>; http_uri; content:<span class="string">"getRuntime().exec"</span>; http_uri; classtype:shellcode-detect; sid:3020018; rev:1; metadata:attack_target web_server, signature_severity Critical, direction outside_to_inside, created_at 2019_10_31, updated_at 2019_10_31, author Canon, tag RCE, tag CVE-2019-0193, tag http, tag exploit, tag Solr;)</span><br><span class="line"></span><br><span class="line">alert http <span class="variable">$EXTERNAL_NET</span> any -&gt; <span class="variable">$HOME_NET</span> any (msg:<span class="string">"LOCAL RULES EXPLOIT Solr RCE CVE-2019-0193 GET Successful"</span>; flow:from_server,established; flowbits:isset,CVE-2019-0193.get.request; content:<span class="string">"200"</span>; http_stat_code; classtype:shellcode-detect; sid:3020019; rev:1; metadata:attack_target web_server, signature_severity Critical, direction outside_to_inside, created_at 2019_10_31, updated_at 2019_10_31, author Canon, tag RCE, tag CVE-2019-0193, tag http, tag exploit, tag Solr;)</span><br></pre></td></tr></table></figure>
+
+
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+          <div class="post-eof"></div>
+        
+      </footer>
+  </article>
+  
+  
+  
+
+    
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/10/24/Suricata+Lua实现本地情报对接/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1490,7 +1583,7 @@
         
           <a href="/archives/">
         
-          <span class="site-state-item-count">18</span>
+          <span class="site-state-item-count">19</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -1503,7 +1596,7 @@
             <a href="/categories/">
           
         
-        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-count">7</span>
         <span class="site-state-item-name">分类</span>
         </a>
       </div>
@@ -1516,7 +1609,7 @@
             <a href="/tags/">
           
         
-        <span class="site-state-item-count">9</span>
+        <span class="site-state-item-count">10</span>
         <span class="site-state-item-name">标签</span>
         </a>
       </div>
