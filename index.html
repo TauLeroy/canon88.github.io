@@ -296,7 +296,7 @@
                 
               
 
-              <time title="创建时间：2020-06-02 11:35:00 / 修改时间：11:49:46" itemprop="dateCreated datePublished" datetime="2020-06-02T11:35:00+08:00">2020-06-02</time>
+              <time title="创建时间：2020-06-02 11:35:00 / 修改时间：11:51:29" itemprop="dateCreated datePublished" datetime="2020-06-02T11:35:00+08:00">2020-06-02</time>
             </span>
           
             
@@ -329,10 +329,13 @@
 
       
           <h4 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h4><p>​        由于AWS流量镜像的特殊性，现阶段生产网的架构中只接入了<strong>HTTP</strong>与<strong>DNS</strong>流量，分别采用了<strong>Zeek</strong>与<strong>Suricata</strong>对现有流量进行分析与预警。<strong>Suricata</strong>负责基于签名的特征检测，<strong>Zeek</strong>负责定制化事件的脚本检测，也算是“各司其职”。近几日，某个业务接口出现了Pindom告警，经过分析发现部分IP尝试对该接口的参数进行遍历。由于遍历参数对应的值设置的都比较大，且后台并未对该参数进行深度的限制，导致了服务器会不断的进行计算，最终导致接口无响应。</p>
-<h4 id="需求"><a href="#需求" class="headerlink" title="需求"></a>需求</h4><pre><code>1. 检测**参数遍历**行为；
-  2. 访问是否存在**周期性**；
-  3. **unique user_agent** 判断；
-  4. **threat intelligence**进行研判；</code></pre><h4 id="实现"><a href="#实现" class="headerlink" title="实现"></a>实现</h4><p>​        通过扩展<strong><a href="https://github.com/Yelp/elastalert" target="_blank" rel="noopener">ElastAlert</a></strong>告警框架的告警模型，来实现以上需求。</p>
+<h4 id="需求"><a href="#需求" class="headerlink" title="需求"></a>需求</h4><ul>
+<li>检测<strong>参数遍历</strong>行为；</li>
+<li>访问是否存在<strong>周期性</strong>；</li>
+<li>unique user_agent 统计；</li>
+<li>threat intelligence 研判；</li>
+</ul>
+<h4 id="实现"><a href="#实现" class="headerlink" title="实现"></a>实现</h4><p>​        通过扩展<strong><a href="https://github.com/Yelp/elastalert" target="_blank" rel="noopener">ElastAlert</a></strong>告警框架的告警模型，来实现以上需求。</p>
 <h5 id="参数遍历"><a href="#参数遍历" class="headerlink" title="参数遍历"></a>参数遍历</h5><ul>
 <li><h6 id="新增规则-Spider-py"><a href="#新增规则-Spider-py" class="headerlink" title="新增规则 - Spider.py"></a>新增规则 - Spider.py</h6></li>
 </ul>
