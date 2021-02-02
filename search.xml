@@ -57,7 +57,7 @@
 </li>
 </ul>
 <hr>
-<h1 id="解决方案-“散装”SIEM-v0-2"><a href="#解决方案-“散装”SIEM-v0-2" class="headerlink" title="解决方案 - “散装”SIEM v0.2"></a>解决方案 - “散装”SIEM v0.2</h1><h2 id="1-Workflow"><a href="#1-Workflow" class="headerlink" title="1. Workflow"></a>1. Workflow</h2><p>​        这是重新调整之后的<strong>“散装”SIEM v0.2</strong>的workflow😁。如下图所示，数据源采集端这里就不展开来说了，都是现成的工具发就完事儿了。下面主要说一下Logstash中对数据处理的部分：</p>
+<h1 id="“进化”-“散装”SIEM-v0-2"><a href="#“进化”-“散装”SIEM-v0-2" class="headerlink" title="“进化” - “散装”SIEM v0.2"></a>“进化” - “散装”SIEM v0.2</h1><h2 id="1-Workflow"><a href="#1-Workflow" class="headerlink" title="1. Workflow"></a>1. Workflow</h2><p>​        这是重新调整之后的<strong>“散装”SIEM v0.2</strong>的workflow😁。如下图所示，数据源采集端这里就不展开来说了，都是现成的工具发就完事儿了。下面主要说一下Logstash中对数据处理的部分：</p>
 <p><img src="/2021/02/02/SIEM（一）/SIEM-v0.2.jpg" alt="SIEM-v0.2"></p>
 <hr>
 <h2 id="2-数据处理"><a href="#2-数据处理" class="headerlink" title="2. 数据处理"></a>2. 数据处理</h2><h3 id="1-Normalized"><a href="#1-Normalized" class="headerlink" title="1. Normalized"></a>1. Normalized</h3><p><img src="/2021/02/02/SIEM（一）/normalized-04.png" alt="image-20201208110506481"></p>
